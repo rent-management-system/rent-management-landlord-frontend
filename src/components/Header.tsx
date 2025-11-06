@@ -18,11 +18,7 @@ const Header = () => {
     <header className="bg-white border-b border-gray-200 fixed top-0 left-0 w-full z-50">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         
-        {/* Logo */}
-        <Link to="/" className="text-xl font-semibold tracking-wide">
-          {t("rentalManagement")}
-        </Link>
-
+    
         {/* Center Menu (Desktop) */}
         <nav className="hidden md:flex gap-10 text-gray-800 font-medium">
           <Link to="/" className="hover:text-black">{t("home")}</Link>
