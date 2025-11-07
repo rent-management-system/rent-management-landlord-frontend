@@ -1,17 +1,16 @@
+
 import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import heroImage from "@/assets/hero-property.png";
-import { Building2, Upload, CheckCircle2 } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Landlord = () => {
@@ -21,46 +20,14 @@ const Landlord = () => {
     title: "",
     location: "",
     price: "",
-    bedrooms: "",
-    bathrooms: "",
     description: "",
     amenities: {
       WiFi: false,
       Parking: false,
       Security: false,
-      Gym: false,
-      Pool: false,
-      Garden: false,
-      Balcony: false,
     },
   });
-
-  const [properties] = useState([
-    {
-      id: "1",
-      title: "Modern Villa in CMC",
-      location: "CMC, Addis Ababa",
-      price: 45000,
-      bedrooms: 3,
-      bathrooms: 2,
-      status: "APPROVED" as const,
-      views: 142,
-      rating: 4.5,
-      reviewCount: 8,
-      amenities: ["WiFi", "Parking", "Security"],
-    },
-    {
-      id: "2",
-      title: "Apartment in Bole",
-      location: "Bole, Addis Ababa",
-      price: 35000,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: "PENDING" as const,
-      views: 0,
-      amenities: ["WiFi", "Gym"],
-    },
-  ]);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -76,9 +43,54 @@ const Landlord = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Redirecting to payment gateway...");
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error("You must be logged in to submit a property.");
+      return;
+    }
+
+    const amenities = Object.keys(formData.amenities).filter(
+      (amenity) => formData.amenities[amenity as keyof typeof formData.amenities]
+    );
+
+    const data = new FormData();
+    data.append("title", formData.title);
+    data.append("description", formData.description);
+    data.append("location", formData.location);
+    data.append("price", formData.price);
+    amenities.forEach(amenity => data.append("amenities", amenity));
+    if (file) {
+      data.append("file", file);
+    }
+
+    try {
+      const response = await fetch("https://property-listing-service.onrender.com/api/v1/properties/submit", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+        body: data,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit property");
+      }
+
+      const result = await response.json();
+      toast.success("Property submitted successfully! Redirecting to payment...");
+      window.location.href = result.payment_url;
+    } catch (error) {
+      toast.error("Failed to submit property");
+    }
   };
 
   return (
@@ -87,48 +99,53 @@ const Landlord = () => {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-background py-20">
-          <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
+        <section className="bg-background py-24">
+          <div className="container mx-auto px-6">
+            <div className="grid md:grid-cols-2 gap-16 items-center">
+              
+              {/* Left Text */}
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-6">
+                <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
                   {t("heroTitle")}
                 </h1>
-                <p className="text-lg text-muted-foreground mb-8">
+
+                <p className="text-lg text-muted-foreground mb-10 max-w-md">
                   {t("heroSubtitle")}
                 </p>
-                <div className="flex gap-4">
-                  <Button size="lg" onClick={() => document.getElementById('create-listing')?.scrollIntoView({ behavior: 'smooth' })}>
+
+                <div className="flex flex-wrap gap-4">
+                  <Button
+                    size="lg"
+                    className="px-8 py-6 text-base"
+                    onClick={() => document.getElementById('create-listing')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
                     {t("getStarted")}
                   </Button>
-                  <Button size="lg" variant="outline" onClick={() => document.getElementById('my-properties')?.scrollIntoView({ behavior: 'smooth' })}>
+
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="px-8 py-6 text-base"
+                    onClick={() => document.getElementById('my-properties')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
                     {t("myProperties")}
                   </Button>
                 </div>
               </div>
-              <div className="rounded-lg overflow-hidden shadow-xl">
-                <img src={heroImage} alt="Property Management" className="w-full h-[400px] object-cover" />
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Stats Section */}
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div>
-                <h3 className="text-4xl font-bold mb-2">50+</h3>
-                <p className="text-muted-foreground">Active Listings</p>
+              {/* Right Image */}
+              <div className="relative">
+                <div className="rounded-2xl overflow-hidden shadow-2xl w-full h-[430px]">
+                  <img
+                    src={heroImage}
+                    alt="Property Management"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <div className="absolute inset-0 -z-10 blur-3xl opacity-30 bg-primary/20 rounded-full translate-x-10 translate-y-10"></div>
               </div>
-              <div>
-                <h3 className="text-4xl font-bold mb-2">100+</h3>
-                <p className="text-muted-foreground">Happy Clients</p>
-              </div>
-              <div>
-                <h3 className="text-4xl font-bold mb-2">3+</h3>
-                <p className="text-muted-foreground">Property Types</p>
-              </div>
+
             </div>
           </div>
         </section>
@@ -183,33 +200,6 @@ const Landlord = () => {
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="bedrooms">{t("bedrooms")}</Label>
-                      <Input
-                        id="bedrooms"
-                        name="bedrooms"
-                        type="number"
-                        value={formData.bedrooms}
-                        onChange={handleInputChange}
-                        placeholder="e.g., 3"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="bathrooms">{t("bathrooms")}</Label>
-                      <Input
-                        id="bathrooms"
-                        name="bathrooms"
-                        type="number"
-                        value={formData.bathrooms}
-                        onChange={handleInputChange}
-                        placeholder="e.g., 2"
-                        required
-                      />
-                    </div>
-                  </div>
-
                   <div>
                     <Label htmlFor="description">{t("description")}</Label>
                     <Textarea
@@ -237,12 +227,7 @@ const Landlord = () => {
                             htmlFor={amenity}
                             className="text-sm font-normal cursor-pointer"
                           >
-                            {amenity === "WiFi" ? t("wifi") : 
-                             amenity === "Parking" ? t("parking") : 
-                             amenity === "Security" ? t("security") : 
-                             amenity === "Gym" ? t("gym") : 
-                             amenity === "Pool" ? t("pool") : 
-                             amenity === "Garden" ? t("generator") : amenity}
+                            {amenity}
                           </Label>
                         </div>
                       ))}
@@ -251,15 +236,7 @@ const Landlord = () => {
 
                   <div>
                     <Label htmlFor="photos">{t("photos")}</Label>
-                    <div className="mt-2 border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
-                      <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        {t("uploadPhotos")}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        PNG, JPG up to 10MB
-                      </p>
-                    </div>
+                    <Input id="photos" type="file" onChange={handleFileChange} />
                   </div>
 
                   <Button type="submit" size="lg" className="w-full">
@@ -276,81 +253,10 @@ const Landlord = () => {
           <div className="container mx-auto px-4">
             <div className="mb-8">
               <h2 className="text-3xl font-bold mb-2">{t("myProperties")}</h2>
-              <p className="text-muted-foreground">{properties.length} Total Listings</p>
+              <p className="text-muted-foreground">0 Total Listings</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {properties.map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  {...property}
-                  onEdit={() => toast.info("Edit functionality coming soon")}
-                  onViewDetails={() => toast.info("View details functionality coming soon")}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* How It Works Section */}
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">{t("howItWorks")}</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                From submission to approval in just a few clicks. Get your property in front of thousands of tenants.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">
-                      01
-                    </div>
-                    <Badge variant="outline">PENDING</Badge>
-                  </div>
-                  <CardTitle>{t("step1Title")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    {t("step1Desc")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">
-                      02
-                    </div>
-                    <Badge variant="secondary">PROCESSING</Badge>
-                  </div>
-                  <CardTitle>{t("step2Title")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    {t("step2Desc")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">
-                      03
-                    </div>
-                    <Badge className="bg-success text-success-foreground">APPROVED</Badge>
-                  </div>
-                  <CardTitle>{t("step3Title")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    {t("step3Desc")}
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Properties will be fetched and displayed here */}
             </div>
           </div>
         </section>
@@ -362,3 +268,4 @@ const Landlord = () => {
 };
 
 export default Landlord;
+
