@@ -10,12 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import heroImage from "@/assets/hero-property.png";
+import FrontPage from "./FrontPage";
 import { Building2, Upload, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import "@/style.scss";
 
 const Landlord = () => {
   const { t } = useLanguage();
+  
   
   const [formData, setFormData] = useState({
     title: "",
@@ -86,62 +88,12 @@ const Landlord = () => {
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section */}
-      <section className="bg-background py-24">
-  <div className="container mx-auto px-6">
-    <div className="grid md:grid-cols-2 gap-16 items-center">
-      
-      {/* Left Text */}
-      <div>
-        <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
-          {t("heroTitle")}
-        </h1>
-
-        <p className="text-lg text-muted-foreground mb-10 max-w-md">
-          {t("heroSubtitle")}
-        </p>
-
-        <div className="flex flex-wrap gap-4">
-          <Button
-            size="lg"
-            className="px-8 py-6 text-base"
-            onClick={() => document.getElementById('create-listing')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            {t("getStarted")}
-          </Button>
-
-          <Button
-            size="lg"
-            variant="outline"
-            className="px-8 py-6 text-base"
-            onClick={() => document.getElementById('my-properties')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            {t("myProperties")}
-          </Button>
-        </div>
-      </div>
-
-          {/* Right Image */}
-      <div className="relative">
-        <div className="rounded-2xl overflow-hidden shadow-2xl w-full h-[430px]">
-          <img
-            src={heroImage}
-            alt="Property Management"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        <div className="absolute inset-0 -z-10 blur-3xl opacity-30 bg-primary/20 rounded-full translate-x-10 translate-y-10"></div>
-      </div>
-
-    </div>
-  </div>
-</section>
+        <FrontPage />
 
         {/* Stats Section */}
         <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="grid grid-cols-3 gap-8 text-center">
               <div>
                 <h3 className="text-4xl font-bold mb-2">50+</h3>
                 <p className="text-muted-foreground">Active Listings</p>

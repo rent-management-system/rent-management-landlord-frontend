@@ -1,3 +1,4 @@
+import React from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +45,7 @@ const PropertyCard = ({
     REJECTED: "destructive",
   } as const;
 
-  const amenityIcons: Record<string, any> = {
+  const amenityIcons: Record<string, React.ElementType> = {
     WiFi: Wifi,
     Parking: Car,
     Security: Shield,
