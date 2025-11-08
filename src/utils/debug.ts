@@ -2,7 +2,7 @@
 
 
 export const debugAuth = {
-  log: (message: string, data?: unknown) => {
+  log: (message: string, data?: any) => {
     console.log(` AUTH DEBUG: ${message}`, data || '');
   },
   
