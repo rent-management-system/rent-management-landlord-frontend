@@ -121,37 +121,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return result;
   };
 
-  const refreshAuth = async () => {
-    debugAuth.log(' refreshAuth called');
-    
-    try {
-      // Check both sessionStorage and localStorage
-      let token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
-      let userData = sessionStorage.getItem('user_data') || localStorage.getItem('user_data');
-      
-      debugAuth.log(' Tokens found', { 
-        hasToken: !!token, 
-        hasUserData: !!userData 
-      });
-
-      if (token && userData) {
-        const user = JSON.parse(userData);
-        debugAuth.log('✅ Setting authenticated state', user);
-        
-        setUser(user); // Update the user state
-        // Set isAuthenticated to true and isLoading to false
-        setIsLoading(false);
-      } else {
-        debugAuth.log('❌ No tokens/user data found');
-        setUser(null); // Clear user state
-        // Set isAuthenticated to false and isLoading to false
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error('refreshAuth error:', error);
-      setUser(null); // Clear user state on error
-      setIsLoading(false);
-    }
+  const refreshAuth = async (): Promise<void> => {
+    debugAuth.log('AuthContext: Manual auth refresh requested');
+    await initializeAuth();
   };
 
   const value: AuthContextType = {
