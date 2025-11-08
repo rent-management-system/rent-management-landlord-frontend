@@ -19,10 +19,6 @@ import {
 import { useTranslation } from "react-i18next";
 import "@/style.scss";
 
-import { useAuth } from '@/contexts/AuthContext';
-import { propertyService } from '@/services/property';
-import { PropertySubmitRequest, Property } from '@/types/property';
-
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: number }) => {
   const [count, setCount] = useState(0);
@@ -238,7 +234,6 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
 
 const Landlord = () => {
   const { t } = useTranslation();
-  const { user, isAuthenticated, isOwner } = useAuth(); // Added useAuth hook
   
   const [formData, setFormData] = useState({
     title: "",
@@ -264,28 +259,32 @@ const Landlord = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  const [properties, setProperties] = useState<Property[]>([]); // Changed to dynamic properties
-  const [isLoading, setIsLoading] = useState(false); // Added isLoading state
-
-  // Load properties on component mount
-  useEffect(() => {
-    if (isAuthenticated && isOwner) {
-      loadMyProperties();
-    }
-  }, [isAuthenticated, isOwner]);
-
-  const loadMyProperties = async (): Promise<void> => {
-    try {
-      setIsLoading(true);
-      // This would call your backend endpoint for owner's properties
-      const myProperties = await propertyService.getMyProperties();
-      setProperties(myProperties);
-    } catch (error) {
-      toast.error('Failed to load properties');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [properties] = useState([
+    {
+      id: "1",
+      title: "Modern Villa in CMC",
+      location: "CMC, Addis Ababa",
+      price: 45000,
+      bedrooms: 3,
+      bathrooms: 2,
+      status: "APPROVED" as const,
+      views: 142,
+      rating: 4.5,
+      reviewCount: 8,
+      amenities: ["WiFi", "Parking", "Security"],
+    },
+    {
+      id: "2",
+      title: "Apartment in Bole",
+      location: "Bole, Addis Ababa",
+      price: 35000,
+      bedrooms: 2,
+      bathrooms: 1,
+      status: "PENDING" as const,
+      views: 0,
+      amenities: ["WiFi", "Gym"],
+    },
+  ]);
 
   const filteredProperties = properties.filter(property => {
     const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -320,54 +319,35 @@ const Landlord = () => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!isOwner) {
-      toast.error('Only property owners can submit listings');
-      return;
-    }
-
     setIsSubmitting(true);
-
-    try {
-      // Prepare formData for submission
-      const submissionData: PropertySubmitRequest = {
-        title: formData.title,
-        description: formData.description,
-        location: formData.location,
-        price: parseFloat(formData.price),
-        bedrooms: parseInt(formData.bedrooms),
-        bathrooms: parseInt(formData.bathrooms),
-        area: parseFloat(formData.area),
-        amenities: Object.entries(formData.amenities)
-          .filter(([, checked]) => checked)
-          .map(([amenity]) => amenity),
-        photos: uploadedImages,
-      };
-
-      // Validate property data
-      const errors = await propertyService.validatePropertyData(submissionData);
-      if (errors.length > 0) {
-        errors.forEach(error => toast.error(error));
-        setIsSubmitting(false); // Stop submitting if validation fails
-        return;
-      }
-
-      // Submit property
-      const response = await propertyService.submitProperty(submissionData);
-      
-      toast.success('Property listed successfully! Redirecting to payment...');
-      
-      // Redirect to payment URL
-      window.location.href = response.payment_url;
-      
-    } catch (error) {
-      console.error('Property submission error:', error);
-      toast.error('Failed to submit property. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    toast.success("Property listed successfully! Redirecting to payment...");
+    
+    // Reset form
+    setFormData({
+      title: "",
+      location: "",
+      price: "",
+      bedrooms: "",
+      bathrooms: "",
+      area: "",
+      description: "",
+      amenities: {
+        WiFi: false,
+        Parking: false,
+        Security: false,
+        Gym: false,
+        Pool: false,
+        Garden: false,
+        Balcony: false,
+      },
+    });
+    setUploadedImages([]);
+    setIsSubmitting(false);
   };
 
   const amenitiesIcons = {
@@ -772,7 +752,7 @@ const Landlord = () => {
                   <div className="flex items-center gap-4 text-muted-foreground">
                     <span className="flex items-center gap-2">
                       <Building2 className="h-4 w-4" />
-                      {properties.length} {t("total_listings")}
+                      {filteredProperties.length} {t("total_listings")}
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-2">
