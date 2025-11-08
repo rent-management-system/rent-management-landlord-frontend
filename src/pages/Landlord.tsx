@@ -60,8 +60,14 @@ const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: num
   );
 };
 
+interface EnhancedPropertyCardProps {
+  property: Property;
+  onEdit: () => void;
+  onViewDetails: () => void;
+}
+
 // Enhanced Property Card Component
-const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
+const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: EnhancedPropertyCardProps) => {
   const { t } = useTranslation();
   
   const getStatusBadge = (status: string) => {

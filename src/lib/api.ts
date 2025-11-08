@@ -35,7 +35,7 @@ class APIClient {
     // Response interceptor for error handling
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => response,
-      (error) => {
+      (error: AxiosError | Error) => {
         this.handleError(error);
         return Promise.reject(error);
       }
@@ -54,7 +54,7 @@ class APIClient {
     }
   }
 
-  private handleError(error: any): void {
+  private handleError(error: AxiosError | Error): void {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
       const message = error.response?.data?.message || error.message;
@@ -103,12 +103,12 @@ class APIClient {
     return response.data;
   }
 
-  public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  public async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.instance.post<T>(url, data, config);
     return response.data;
   }
 
-  public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  public async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.instance.put<T>(url, data, config);
     return response.data;
   }
