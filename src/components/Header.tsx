@@ -40,9 +40,9 @@ const Header: React.FC = () => {
     <div className="flex items-center justify-between pt-4 px-3 relative z-20">
       <div>
         <img
-          src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bG9nb3xlbnwwfDB8MHx8fDA%3D&auto=format&fit=crop&q=60&w=500"
+          src="/Black.png"
           alt="Logo"
-          className="h-10"
+          className="h-20"
         />
       </div>
 
