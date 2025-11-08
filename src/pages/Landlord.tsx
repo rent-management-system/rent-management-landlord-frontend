@@ -73,7 +73,7 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
         icon: Calendar
       },
       REJECTED: { 
-        label: "Rejected", 
+        label: t("rejected"), 
         class: "bg-red-500/20 text-red-700 border-red-300 dark:text-red-300",
         icon: Trash2
       }
@@ -147,9 +147,9 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
         <div className="mb-4">
           <div className="flex items-center gap-2 text-2xl font-bold text-primary">
             <DollarSign className="h-5 w-5" />
-            {property.price.toLocaleString()} ETB
+            {property.price.toLocaleString()} {t('etb')}
           </div>
-          <p className="text-xs text-muted-foreground">ዋጋ</p>
+          <p className="text-xs text-muted-foreground">{t('price_in_birr')}</p>
         </div>
 
         {/* Property Details */}
@@ -159,14 +159,14 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
               <Bed className="h-4 w-4 text-primary" />
               <span className="font-semibold">{property.bedrooms}</span>
             </div>
-            <p className="text-xs text-muted-foreground">መኝታ</p>
+            <p className="text-xs text-muted-foreground">{t('bedrooms_label')}</p>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/30">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Bath className="h-4 w-4 text-primary" />
               <span className="font-semibold">{property.bathrooms}</span>
             </div>
-            <p className="text-xs text-muted-foreground">መታጠቢያ</p>
+            <p className="text-xs text-muted-foreground">{t('bathrooms_label')}</p>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
                 <span className="font-semibold">{property.rating}</span>
               </div>
               <span className="text-sm text-muted-foreground">
-                ({property.reviewCount} {t("reviews")})
+                {t("reviews_count", { count: property.reviewCount })}
               </span>
             </div>
             <div className="text-sm text-muted-foreground">
@@ -262,8 +262,8 @@ const Landlord = () => {
   const [properties] = useState([
     {
       id: "1",
-      title: "Modern Villa in CMC",
-      location: "CMC, Addis Ababa",
+      title: t("modern_villa_cmc"),
+      location: t("cmc_addis_ababa"),
       price: 45000,
       bedrooms: 3,
       bathrooms: 2,
@@ -275,8 +275,8 @@ const Landlord = () => {
     },
     {
       id: "2",
-      title: "Apartment in Bole",
-      location: "Bole, Addis Ababa",
+      title: t("apartment_bole"),
+      location: t("bole_addis_ababa"),
       price: 35000,
       bedrooms: 2,
       bathrooms: 1,
@@ -325,7 +325,7 @@ const Landlord = () => {
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
-    toast.success("Property listed successfully! Redirecting to payment...");
+    toast.success(t("property_listed_success"));
     
     // Reset form
     setFormData({
@@ -383,7 +383,7 @@ const Landlord = () => {
               <Card className="text-center" aria-labelledby="step1-title">
                 <CardHeader>
                   <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center" aria-hidden="true">
-                    <i className="fa-solid fa-right-to-bracket fa-xl text-primary" title="Login"></i>
+                    <i className="fa-solid fa-right-to-bracket fa-xl text-primary" title={t("login_and_search")}></i>
                   </div>
                   <CardTitle id="step1-title" className="text-xl">{t("login_and_search")}</CardTitle>
                 </CardHeader>
@@ -398,7 +398,7 @@ const Landlord = () => {
               <Card className="text-center" aria-labelledby="step2-title">
                 <CardHeader>
                   <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center" aria-hidden="true">
-                    <i className="fa-solid fa-phone fa-xl text-primary" title="Contact Owner / Apply"></i>
+                    <i className="fa-solid fa-phone fa-xl text-primary" title={t("contact_owner_and_apply")}></i>
                   </div>
                   <CardTitle id="step2-title" className="text-xl">{t("contact_owner_and_apply")}</CardTitle>
                 </CardHeader>
@@ -413,7 +413,7 @@ const Landlord = () => {
               <Card className="text-center" aria-labelledby="step3-title">
                 <CardHeader>
                   <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center" aria-hidden="true">
-                    <i className="fa-solid fa-house-chimney-crack fa-xl text-primary" title="Move In"></i>
+                    <i className="fa-solid fa-house-chimney-crack fa-xl text-primary" title={t("move_in_and_settle")}></i>
                   </div>
                   <CardTitle id="step3-title" className="text-xl">{t("move_in_and_settle")}</CardTitle>
                 </CardHeader>
@@ -491,7 +491,7 @@ const Landlord = () => {
                     {t("pay_per_post_fee")}
                   </Badge>
                   <CardDescription className="text-base">
-                    ንብረትዎን ለመዘርዘር ከታች ያሉትን ዝርዝሮች ይሙሉ
+                    {t("fill_form_to_list_property")}
                   </CardDescription>
                 </CardHeader>
                 
@@ -593,7 +593,7 @@ const Landlord = () => {
                         <div className="space-y-2">
                           <Label htmlFor="area" className="text-sm font-medium flex items-center gap-2">
                             <Square className="h-4 w-4" />
-                            Area (m²)
+                            {t('area')}
                           </Label>
                           <Input
                             id="area"
@@ -601,7 +601,7 @@ const Landlord = () => {
                             type="number"
                             value={formData.area}
                             onChange={handleInputChange}
-                            placeholder="ለምሳሌ፣ 120"
+                            placeholder={t("area_placeholder")}
                             className="h-12"
                           />
                         </div>
@@ -684,7 +684,7 @@ const Landlord = () => {
                       {uploadedImages.length > 0 && (
                         <div className="mt-4">
                           <p className="text-sm text-muted-foreground mb-3">
-                            {uploadedImages.length} images selected
+                            {t("images_selected", { count: uploadedImages.length })}
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                             {uploadedImages.map((file, index) => (
@@ -719,7 +719,7 @@ const Landlord = () => {
                         {isSubmitting ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Processing...
+                            {t('processing')}
                           </>
                         ) : (
                           <>
@@ -757,12 +757,12 @@ const Landlord = () => {
                     <span>•</span>
                     <span className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      {properties.filter(p => p.status === "APPROVED").length} Approved
+                      {properties.filter(p => p.status === "APPROVED").length} {t('approved')}
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-yellow-500" />
-                      {properties.filter(p => p.status === "PENDING").length} Pending
+                      {properties.filter(p => p.status === "PENDING").length} {t('pending')}
                     </span>
                   </div>
                 </div>
@@ -772,7 +772,7 @@ const Landlord = () => {
                   className="gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Add New Property
+                  {t('add_new_property')}
                 </Button>
               </div>
 
@@ -783,7 +783,7 @@ const Landlord = () => {
                   <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search properties by title or location..."
+                      placeholder={t('search_placeholder')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -797,7 +797,7 @@ const Landlord = () => {
                       size="sm"
                       onClick={() => setStatusFilter("ALL")}
                     >
-                      All
+                      {t('all')}
                     </Button>
                     <Button
                       variant={statusFilter === "APPROVED" ? "default" : "outline"}
@@ -806,7 +806,7 @@ const Landlord = () => {
                       className="gap-2"
                     >
                       <CheckCircle2 className="h-3 w-3" />
-                      Approved
+                      {t('approved')}
                     </Button>
                     <Button
                       variant={statusFilter === "PENDING" ? "default" : "outline"}
@@ -815,7 +815,7 @@ const Landlord = () => {
                       className="gap-2"
                     >
                       <Calendar className="h-3 w-3" />
-                      Pending
+                      {t('pending')}
                     </Button>
                   </div>
                 </div>
@@ -827,11 +827,11 @@ const Landlord = () => {
               <Card className="text-center py-16">
                 <CardContent>
                   <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-xl font-semibold mb-2">No properties found</h3>
+                  <h3 className="text-xl font-semibold mb-2">{t('no_properties_found')}</h3>
                   <p className="text-muted-foreground mb-6">
                     {searchTerm || statusFilter !== "ALL" 
-                      ? "Try adjusting your search or filter criteria"
-                      : "You haven't listed any properties yet"
+                      ? t('adjust_search_criteria')
+                      : t('no_properties_listed')
                     }
                   </p>
                   <Button 
@@ -839,7 +839,7 @@ const Landlord = () => {
                     className="gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    List Your First Property
+                    {t('list_first_property')}
                   </Button>
                 </CardContent>
               </Card>

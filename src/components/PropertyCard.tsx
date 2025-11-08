@@ -65,7 +65,7 @@ const PropertyCard = ({
           className="absolute top-4 right-4" 
           variant={status === "APPROVED" ? "default" : status === "PENDING" ? "secondary" : "destructive"}
         >
-          {status}
+          {t(status.toLowerCase())}
         </Badge>
       </div>
       
@@ -101,7 +101,7 @@ const PropertyCard = ({
           {rating ? (
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 fill-warning text-warning" />
-              {rating} ({reviewCount})
+              {rating} {t("reviews_count", { count: reviewCount })}
             </div>
           ) : (
             <span className="text-muted-foreground">{t("no_reviews")}</span>
