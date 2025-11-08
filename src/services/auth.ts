@@ -8,19 +8,23 @@ class AuthService {
   // Token management
   public setTokens(tokens: AuthTokens, rememberMe: boolean = false): void {
     const storage = rememberMe ? localStorage : sessionStorage;
-    
+    console.log('AuthService: Setting tokens. RememberMe:', rememberMe, 'Access Token:', tokens.access_token ? 'Set' : 'Not Set', 'Refresh Token:', tokens.refresh_token ? 'Set' : 'Not Set');
     storage.setItem(this.ACCESS_TOKEN_KEY, tokens.access_token);
     storage.setItem(this.REFRESH_TOKEN_KEY, tokens.refresh_token);
   }
 
   public getAccessToken(): string | null {
-    return localStorage.getItem(this.ACCESS_TOKEN_KEY) || 
-           sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
+    const token = localStorage.getItem(this.ACCESS_TOKEN_KEY) || 
+                  sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
+    console.log('AuthService: Getting access token. Token found:', !!token);
+    return token;
   }
 
   public getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY) || 
-           sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
+    const token = localStorage.getItem(this.REFRESH_TOKEN_KEY) || 
+                  sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
+    console.log('AuthService: Getting refresh token. Token found:', !!token);
+    return token;
   }
 
   public clearTokens(): void {
@@ -34,12 +38,15 @@ class AuthService {
   // User data management
   public setUser(user: User): void {
     const storage = localStorage.getItem(this.ACCESS_TOKEN_KEY) ? localStorage : sessionStorage;
+    console.log('AuthService: Setting user data:', user);
     storage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   public getUser(): User | null {
     const userData = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
-    return userData ? JSON.parse(userData) : null;
+    const user = userData ? JSON.parse(userData) : null;
+    console.log('AuthService: Getting user data:', user);
+    return user;
   }
 
   public clearUser(): void {
@@ -67,7 +74,9 @@ class AuthService {
   // Role-based access control
   public hasRole(requiredRole: string): boolean {
     const user = this.getUser();
-    return user?.role === requiredRole;
+    const hasRequiredRole = user?.role === requiredRole;
+    console.log(`AuthService: Checking role. User role: ${user?.role}, Required role: ${requiredRole}, Result: ${hasRequiredRole}`);
+    return hasRequiredRole;
   }
 
   public isOwner(): boolean {
@@ -85,6 +94,7 @@ class AuthService {
   // Login/logout
   public async login(credentials: LoginCredentials, rememberMe: boolean = false): Promise<AuthTokens> {
     try {
+      console.log('AuthService: Attempting login for user:', credentials.username);
       const response = await fetch('https://rent-managment-system-user-magt.onrender.com/api/v1/auth/login', {
         method: 'POST',
         headers: {
@@ -95,10 +105,12 @@ class AuthService {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('AuthService: Login failed. Response:', errorData);
         throw new Error(errorData.detail || 'Login failed');
       }
 
       const tokens: AuthTokens = await response.json();
+      console.log('AuthService: Login successful. Tokens received.');
       this.setTokens(tokens, rememberMe);
 
       // Fetch user profile after successful login
@@ -106,12 +118,14 @@ class AuthService {
 
       return tokens;
     } catch (error) {
+      console.error('AuthService: Login caught error:', error);
       throw new Error(error instanceof Error ? error.message : 'Login failed');
     }
   }
 
   private async fetchUserProfile(token: string): Promise<void> {
     try {
+      console.log('AuthService: Fetching user profile...');
       const response = await fetch('https://rent-managment-system-user-magt.onrender.com/api/v1/users/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -120,10 +134,14 @@ class AuthService {
 
       if (response.ok) {
         const user: User = await response.json();
+        console.log('AuthService: User profile fetched successfully:', user);
         this.setUser(user);
+      } else {
+        const errorData = await response.json();
+        console.error('AuthService: Failed to fetch user profile. Response:', errorData);
       }
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
+      console.error('AuthService: Caught error fetching user profile:', error);
     }
   }
 

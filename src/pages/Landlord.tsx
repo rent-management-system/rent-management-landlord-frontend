@@ -239,6 +239,7 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
 const Landlord = () => {
   const { t } = useTranslation();
   const { user, isAuthenticated, isOwner } = useAuth(); // Added useAuth hook
+  console.log('Landlord Component: User:', user, 'isAuthenticated:', isAuthenticated, 'isOwner:', isOwner);
   
   const [formData, setFormData] = useState({
     title: "",
