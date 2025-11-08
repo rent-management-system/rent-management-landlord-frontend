@@ -236,9 +236,11 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
   );
 };
 
+import { debugAuth } from '@/utils/debug'; // Import debugAuth
+
 const Landlord = () => {
   const { t } = useTranslation();
-  const { user, isAuthenticated, isOwner } = useAuth(); // Added useAuth hook
+  const { user, isAuthenticated, isOwner, refreshAuth } = useAuth(); // Added refreshAuth
   console.log('Landlord Component: User:', user, 'isAuthenticated:', isAuthenticated, 'isOwner:', isOwner);
   
   const [formData, setFormData] = useState({
@@ -267,6 +269,25 @@ const Landlord = () => {
 
   const [properties, setProperties] = useState<Property[]>([]); // Changed to dynamic properties
   const [isLoading, setIsLoading] = useState(false); // Added isLoading state
+
+  // Emergency fix - force refresh auth state on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (!isAuthenticated || !isOwner) {
+        console.log(' AUTH ISSUE DETECTED - Attempting refresh...');
+        await refreshAuth();
+        
+        // Check again after refresh
+        if (!isOwner) {
+          console.log(' Still not owner, checking storage manually...');
+          debugAuth.checkStorage();
+          debugAuth.checkURL();
+        }
+      }
+    };
+
+    checkAuth();
+  }, [isAuthenticated, isOwner, refreshAuth]);
 
   // Load properties on component mount
   useEffect(() => {
