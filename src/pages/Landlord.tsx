@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +17,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import "@/style.scss";
+import { useProperties } from "@/hooks/useProperties";
+import { Property, PropertySubmission } from "@/services/propertyService";
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: number }) => {
@@ -56,8 +57,60 @@ const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: num
   );
 };
 
+// Stats Section Component
+const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending: number; approved: number; rejected: number } | null }) => {
+  const { t } = useTranslation();
+  
+  return (
+    <section className="py-16 bg-gradient-to-br from-background to-muted/50">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          {/* Total Listings */}
+          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
+            <div className="relative inline-block">
+              <AnimatedCounter 
+                end={metrics?.total_listings || 0} 
+                duration={2500} 
+              />
+            </div>
+            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
+              {t("total_listings")}
+            </p>
+          </div>
+
+          {/* Approved Listings */}
+          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
+            <div className="relative inline-block">
+              <AnimatedCounter 
+                end={metrics?.approved || 0} 
+                duration={3000} 
+              />
+            </div>
+            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
+              {t("approved_listings")}
+            </p>
+          </div>
+
+          {/* Pending Listings */}
+          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
+            <div className="relative inline-block">
+              <AnimatedCounter 
+                end={metrics?.pending || 0} 
+                duration={1500} 
+              />
+            </div>
+            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
+              {t("pending_listings")}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // Enhanced Property Card Component
-const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
+const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: Property; onEdit: () => void; onViewDetails: () => void }) => {
   const { t } = useTranslation();
   
   const getStatusBadge = (status: string) => {
@@ -104,9 +157,9 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
       {/* Property Image Section */}
       <div className="relative h-48 bg-gradient-to-br from-primary/10 to-primary/5">
-        {property.image ? (
+        {property.photos && property.photos.length > 0 ? (
           <img 
-            src={property.image} 
+            src={property.photos[0]} 
             alt={property.title}
             className="w-full h-full object-cover"
           />
@@ -124,7 +177,7 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
         {/* View Count */}
         <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
           <Eye className="h-3 w-3" />
-          {property.views}
+          {property.views || 0}
         </div>
 
         {/* Hover Overlay */}
@@ -157,14 +210,14 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
           <div className="text-center p-3 rounded-lg bg-muted/30">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Bed className="h-4 w-4 text-primary" />
-              <span className="font-semibold">{property.bedrooms}</span>
+              <span className="font-semibold">{property.bedrooms || 0}</span>
             </div>
             <p className="text-xs text-muted-foreground">መኝታ</p>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/30">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Bath className="h-4 w-4 text-primary" />
-              <span className="font-semibold">{property.bathrooms}</span>
+              <span className="font-semibold">{property.bathrooms || 0}</span>
             </div>
             <p className="text-xs text-muted-foreground">መታጠቢያ</p>
           </div>
@@ -179,11 +232,11 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
                 <span className="font-semibold">{property.rating}</span>
               </div>
               <span className="text-sm text-muted-foreground">
-                ({property.reviewCount} {t("reviews")})
+                ({property.reviewCount || 0} {t("reviews")})
               </span>
             </div>
             <div className="text-sm text-muted-foreground">
-              {property.views} {t("views")}
+              {property.views || 0} {t("views")}
             </div>
           </div>
         )}
@@ -235,6 +288,14 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: any) => {
 const Landlord = () => {
   const { t } = useTranslation();
   
+  // Use the properties hook for real data
+  const { 
+    userProperties, 
+    metrics, 
+    loading, 
+    actions 
+  } = useProperties();
+
   const [formData, setFormData] = useState({
     title: "",
     location: "",
@@ -259,34 +320,8 @@ const Landlord = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  const [properties] = useState([
-    {
-      id: "1",
-      title: "Modern Villa in CMC",
-      location: "CMC, Addis Ababa",
-      price: 45000,
-      bedrooms: 3,
-      bathrooms: 2,
-      status: "APPROVED" as const,
-      views: 142,
-      rating: 4.5,
-      reviewCount: 8,
-      amenities: ["WiFi", "Parking", "Security"],
-    },
-    {
-      id: "2",
-      title: "Apartment in Bole",
-      location: "Bole, Addis Ababa",
-      price: 35000,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: "PENDING" as const,
-      views: 0,
-      amenities: ["WiFi", "Gym"],
-    },
-  ]);
-
-  const filteredProperties = properties.filter(property => {
+  // Filter user properties based on search and status
+  const filteredProperties = userProperties.filter(property => {
     const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          property.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || property.status === statusFilter;
@@ -322,32 +357,58 @@ const Landlord = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    toast.success("Property listed successfully! Redirecting to payment...");
-    
-    // Reset form
-    setFormData({
-      title: "",
-      location: "",
-      price: "",
-      bedrooms: "",
-      bathrooms: "",
-      area: "",
-      description: "",
-      amenities: {
-        WiFi: false,
-        Parking: false,
-        Security: false,
-        Gym: false,
-        Pool: false,
-        Garden: false,
-        Balcony: false,
-      },
-    });
-    setUploadedImages([]);
-    setIsSubmitting(false);
+
+    try {
+      // Convert form data to API format
+      const submissionData: PropertySubmission = {
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        price: parseFloat(formData.price),
+        amenities: Object.entries(formData.amenities)
+          .filter(([_, checked]) => checked)
+          .map(([amenity]) => amenity),
+        photos: uploadedImages,
+        ...(formData.bedrooms && { bedrooms: parseInt(formData.bedrooms) }),
+        ...(formData.bathrooms && { bathrooms: parseInt(formData.bathrooms) }),
+        ...(formData.area && { area: parseInt(formData.area) }),
+      };
+
+      // Submit to backend
+      const result = await actions.submitProperty(submissionData);
+      
+      if (result) {
+        // Form will be reset after successful submission and redirect
+        // The payment redirect happens automatically in the service
+        toast.success("Property submitted successfully! Redirecting to payment...");
+        
+        // Reset form
+        setFormData({
+          title: "",
+          location: "",
+          price: "",
+          bedrooms: "",
+          bathrooms: "",
+          area: "",
+          description: "",
+          amenities: {
+            WiFi: false,
+            Parking: false,
+            Security: false,
+            Gym: false,
+            Pool: false,
+            Garden: false,
+            Balcony: false,
+          },
+        });
+        setUploadedImages([]);
+      }
+    } catch (error) {
+      // Error handling is done in the service layer
+      console.error('Submission error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const amenitiesIcons = {
@@ -427,45 +488,8 @@ const Landlord = () => {
           </div>
         </section>
 
-        {/* Updated Stats Section with Animated Counters */}
-        <section className="py-16 bg-gradient-to-br from-background to-muted/50">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              {/* Active Listings */}
-              <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-                <div className="relative inline-block">
-                  <AnimatedCounter end={50} duration={2500} />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-                <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-                  {t("active_listings")}
-                </p>
-              </div>
-
-              {/* Happy Clients */}
-              <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-                <div className="relative inline-block">
-                  <AnimatedCounter end={100} duration={3000} />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-green-500/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-                <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-                  {t("happy_clients")}
-                </p>
-              </div>
-
-              {/* Property Types */}
-              <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-                <div className="relative inline-block">
-                  <AnimatedCounter end={3} duration={1500} />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-blue-500/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-                <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-                  {t("property_types")}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Stats Section with real data */}
+        <StatsSection metrics={metrics} />
 
         {/* Enhanced Create Property Listing Form */}
         <section id="create-listing" className="py-16 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-gray-900/50 dark:to-gray-800/30">
@@ -739,16 +763,14 @@ const Landlord = () => {
           </div>
         </section>
 
-        {/* Enhanced My Properties Section */}
+        {/* My Properties Section with real data */}
         <section id="my-properties" className="py-16 bg-gradient-to-br from-background to-muted/20">
           <div className="container mx-auto px-4">
-            {/* Header with Stats and Actions */}
+            {/* Header with real stats */}
             <div className="mb-8">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                    {t("myProperties")}
-                  </h2>
+                  <h2 className="text-3xl font-bold mb-2">{t("myProperties")}</h2>
                   <div className="flex items-center gap-4 text-muted-foreground">
                     <span className="flex items-center gap-2">
                       <Building2 className="h-4 w-4" />
@@ -757,12 +779,12 @@ const Landlord = () => {
                     <span>•</span>
                     <span className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      {properties.filter(p => p.status === "APPROVED").length} Approved
+                      {userProperties.filter(p => p.status === "APPROVED").length} Approved
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-yellow-500" />
-                      {properties.filter(p => p.status === "PENDING").length} Pending
+                      {userProperties.filter(p => p.status === "PENDING").length} Pending
                     </span>
                   </div>
                 </div>
@@ -822,8 +844,13 @@ const Landlord = () => {
               </Card>
             </div>
 
-            {/* Properties Grid */}
-            {filteredProperties.length === 0 ? (
+            {/* Properties Grid with real data */}
+            {loading ? (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p>Loading properties...</p>
+              </div>
+            ) : filteredProperties.length === 0 ? (
               <Card className="text-center py-16">
                 <CardContent>
                   <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -849,8 +876,8 @@ const Landlord = () => {
                   <EnhancedPropertyCard
                     key={property.id}
                     property={property}
-                    onEdit={() => toast.info(t("edit_coming_soon"))}
-                    onViewDetails={() => toast.info(t("view_details_coming_soon"))}
+                    onEdit={() => toast.info("Edit functionality coming soon")}
+                    onViewDetails={() => toast.info("View details coming soon")}
                   />
                 ))}
               </div>

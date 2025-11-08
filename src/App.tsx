@@ -7,25 +7,30 @@ import Index from "./pages/Index";
 import Landlord from "./pages/Landlord";
 import NotFound from "./pages/NotFound";
 import AuthCallbackWithLogs from "./components/AuthCallbackRedirect";
+import { useApiTest } from "./utils/apiTest"; // Import useApiTest
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landlord />} />
-            <Route path="/landlord" element={<Landlord />} />
-            <Route path="/auth/callback" element={<AuthCallbackWithLogs />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  useApiTest(); // Call the hook here
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Landlord />} />
+              <Route path="/landlord" element={<Landlord />} />
+              <Route path="/auth/callback" element={<AuthCallbackWithLogs />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
