@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import TokenInitializer from '@/components/TokenInitializer';
 import LoginRedirect from '@/pages/LoginRedirect';
+import AuthCallbackRedirect from '@/components/AuthCallbackRedirect';
 import Landlord from '@/pages/Landlord';
 import { Toaster } from 'sonner'; // Assuming this is the correct Toaster for sonner
 import DebugAuth from '@/components/DebugAuth';
@@ -54,6 +55,9 @@ const AppContent: React.FC = () => {
         <Routes>
           {/* Auth redirect handler - this is where users land after login */}
           <Route path="/auth-redirect" element={<LoginRedirect />} />
+          
+          {/* NEW: Add the callback route that User Management sends users to */}
+          <Route path="/auth/callback" element={<AuthCallbackRedirect />} />
           
           {/* Login redirect for error cases */}
           <Route path="/login" element={<LoginRedirect />} />

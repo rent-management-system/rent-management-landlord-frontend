@@ -6,27 +6,27 @@ class TokenHandler {
    * Enhanced token extraction from URL with better debugging
    */
   public handleTokenFromURL(): boolean {
-    debugAuth.log('Checking URL for tokens');
+    debugAuth.log('Checking URL for tokens from any auth endpoint');
     
-    if (typeof window === 'undefined') return false;
-
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
-    const role = urlParams.get('role');
+    
+    // Check if we're on any auth callback path
+    const isAuthCallback = window.location.pathname === '/auth/callback' || 
+                          window.location.pathname === '/auth-redirect';
+    
+    debugAuth.log('Token check', { 
+      path: window.location.pathname,
+      isAuthCallback,
+      hasToken: !!token 
+    });
 
-    debugAuth.log('URL token check', { hasToken: !!token, hasRole: !!role, role });
-
-    if (token) {
-      // Store the token securely
-      this.storeTokenFromURL(token, role);
-      
-      // Clean URL - remove token from address bar for security
+    if (token && isAuthCallback) {
+      this.storeTokenFromURL(token, urlParams.get('role'));
       this.cleanURL();
-      
       return true;
     }
 
-    debugAuth.log('No token found in URL');
     return false;
   }
 
