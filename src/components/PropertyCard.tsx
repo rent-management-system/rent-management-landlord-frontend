@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bed, Bath, Eye, Star, MapPin, Wifi, Car, Shield } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 interface PropertyCardProps {
   id: string;
@@ -37,7 +37,7 @@ const PropertyCard = ({
   onEdit,
   onViewDetails,
 }: PropertyCardProps) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   
   const statusColors = {
     APPROVED: "success",
@@ -58,7 +58,7 @@ const PropertyCard = ({
           <img src={image} alt={title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            No Image
+            {t("no_image")}
           </div>
         )}
         <Badge 
@@ -80,15 +80,15 @@ const PropertyCard = ({
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">Price</p>
+            <p className="text-sm text-muted-foreground">{t("price")}</p>
             <p className="font-bold text-lg">{price.toLocaleString()} ETB</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-muted-foreground">Rooms</p>
+            <p className="text-sm text-muted-foreground">{t("rooms")}</p>
             <p className="font-semibold">
               <Bed className="inline h-4 w-4 mr-1" />
-              {bedrooms} BD / <Bath className="inline h-4 w-4 mr-1" />
-              {bathrooms} BA
+              {bedrooms} {t("bedrooms_short")} / <Bath className="inline h-4 w-4 mr-1" />
+              {bathrooms} {t("bathrooms_short")}
             </p>
           </div>
         </div>
@@ -104,7 +104,7 @@ const PropertyCard = ({
               {rating} ({reviewCount})
             </div>
           ) : (
-            <span className="text-muted-foreground">No reviews</span>
+            <span className="text-muted-foreground">{t("no_reviews")}</span>
           )}
         </div>
         
@@ -114,7 +114,7 @@ const PropertyCard = ({
             return (
               <Badge key={amenity} variant="outline" className="gap-1">
                 {Icon && <Icon className="h-3 w-3" />}
-                {amenity}
+                {t(amenity.toLowerCase())}
               </Badge>
             );
           })}
@@ -126,7 +126,7 @@ const PropertyCard = ({
           {t("edit")}
         </Button>
         <Button className="flex-1" onClick={onViewDetails}>
-          View Details
+          {t("view_details")}
         </Button>
       </CardFooter>
     </Card>

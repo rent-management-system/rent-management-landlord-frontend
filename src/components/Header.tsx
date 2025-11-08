@@ -9,12 +9,10 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 const Header: React.FC = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
-  const { language, setLanguage } = useLanguage();
 
   const toggleNav = () => setIsNavOpen((s) => !s);
   const closeNav = () => setIsNavOpen(false);
@@ -36,6 +34,12 @@ const Header: React.FC = () => {
     };
   }, [isNavOpen]);
 
+  // Function to handle external navigation
+  const handleExternalLink = (url: string) => {
+    closeNav();
+    window.open(url, "_blank");
+  };
+
   return (
     <div className="flex items-center justify-between pt-4 px-3 relative z-20">
       <div>
@@ -47,36 +51,36 @@ const Header: React.FC = () => {
       </div>
 
       <nav className="items-center space-x-12 list-none hidden md:flex">
-        <Link
-          to="/"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700"
+        <a
+          href="https://rent-management-system-tau.vercel.app/"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
         >
-          Home
-        </Link>
-        <Link
-          to="/about"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700"
+          {t("home")}
+        </a>
+        <a
+          href="https://rent-management-system-tau.vercel.app/#about"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
         >
-          About
-        </Link>
-        <Link
-          to="/properties"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700"
+          {t("about")}
+        </a>
+        <a
+          href="https://rent-management-system-tau.vercel.app/#product"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
         >
-          Properties
-        </Link>
-        <Link
-          to="/testimony"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700"
+          {t("properties")}
+        </a>
+        <a
+          href="https://rent-management-system-tau.vercel.app/#testimonials"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
         >
-          Testimony
-        </Link>
-        <Link
-          to="/contact"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700"
+          {t("testimonials")}
+        </a>
+        <a
+          href="https://rent-management-system-tau.vercel.app/contact"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
         >
-          Contact
-        </Link>
+          {t("contact")}
+        </a>
       </nav>
 
       <div className="flex items-center">
@@ -88,7 +92,7 @@ const Header: React.FC = () => {
             value={i18n.language}
           >
             <option value="" disabled>
-              {t("English")}
+              {t("select_language")}
             </option>
             <option value="am">{t("amharic_option")}</option>
             <option value="en">{t("english_option")}</option>
@@ -152,45 +156,40 @@ const Header: React.FC = () => {
 
         {/* Drawer content */}
         <nav className="px-6 pb-8 flex flex-col space-y-6">
-          <Link
-            to="/"
-            onClick={closeNav}
-            className="text-[1.25rem] font-medium"
+          <button
+            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/")}
+            className="text-[1.25rem] font-medium text-left"
           >
             {t("home")}
-          </Link>
+          </button>
 
-          <Link
-            to="/about"
-            onClick={closeNav}
-            className="text-[1.25rem] font-medium"
+          <button
+            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/#about")}
+            className="text-[1.25rem] font-medium text-left"
           >
             {t("about")}
-          </Link>
+          </button>
 
-          <Link
-            to="/properties"
-            onClick={closeNav}
-            className="text-[1.25rem] font-medium"
+          <button
+            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/#product")}
+            className="text-[1.25rem] font-medium text-left"
           >
             {t("properties")}
-          </Link>
+          </button>
 
-          <Link
-            to="/testimonials"
-            onClick={closeNav}
-            className="text-[1.25rem] font-medium"
+          <button
+            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/#testimonials")}
+            className="text-[1.25rem] font-medium text-left"
           >
             {t("testimonials")}
-          </Link>
+          </button>
 
-          <Link
-            to="/contact"
-            onClick={closeNav}
-            className="text-[1.25rem] font-medium"
+          <button
+            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/contact")}
+            className="text-[1.25rem] font-medium text-left"
           >
             {t("contact")}
-          </Link>
+          </button>
 
           <div className="mt-4">
             <select
@@ -199,7 +198,7 @@ const Header: React.FC = () => {
               value={i18n.language}
             >
               <option value="" disabled>
-                {t("English")}
+                {t("select_language")}
               </option>
               <option value="am">{t("amharic_option")}</option>
               <option value="en">{t("english_option")}</option>
