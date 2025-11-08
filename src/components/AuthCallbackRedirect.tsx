@@ -1,139 +1,88 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { debugAuth } from '@/utils/debug';
-import { tokenHandler } from '@/utils/tokenHandler'; // Import tokenHandler
-import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
-const AuthCallbackRedirect: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const { refreshAuth } = useAuth();
-  const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
-  const [message, setMessage] = useState<string>('Processing authentication...');
+const AuthCallback = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [status, setStatus] = useState("processing");
 
   useEffect(() => {
-    const processAuthCallback = async () => {
-      debugAuth.log('AuthCallbackRedirect: Starting authentication callback processing');
-      
-      const token = searchParams.get('token');
+    console.log("🎯 AuthCallback component mounted");
+    console.log("📍 Full current URL:", window.location.href);
+    console.log("🔍 Location search:", location.search);
+    console.log("📁 Location pathname:", location.pathname);
 
-      if (!token) {
-        debugAuth.log('❌ No token found in URL for AuthCallbackRedirect');
-        setStatus('error');
-        setMessage('No authentication token found. Please try logging in again.');
-        setTimeout(() => {
-          window.location.href = '/login?error=no_token';
-        }, 3000);
-        return;
-      }
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
 
+    console.log("🔑 Extracted token:", token ? `Present (${token.length} chars)` : "NULL");
+
+    if (token) {
       try {
-        setStatus('processing');
-        setMessage('Verifying authentication token...');
-
-        // Use tokenHandler to process the token from the URL
-        // This function handles verification, storage, and URL cleaning internally
-        const success = await tokenHandler.handleTokenFromURL();
-
-        if (success) {
-          debugAuth.log('✅ Token processed successfully by tokenHandler');
-          setMessage('Setting up your session...');
-          await refreshAuth(); // Refresh AuthContext state after tokenHandler has done its job
-
-          setStatus('success');
-          setMessage('Authentication successful! Redirecting...');
-          
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 1500);
-        } else {
-          debugAuth.log('❌ tokenHandler failed to process token');
-          throw new Error('Token processing failed.');
-        }
-
-      } catch (error) {
-        console.error('AuthCallbackRedirect error:', error);
-        debugAuth.log('❌ Authentication process failed in AuthCallbackRedirect', { 
-          error: error.message,
-          stack: error.stack 
-        });
+        // Store token
+        localStorage.setItem("authToken", token);
+        console.log("✅ Token stored in localStorage successfully");
         
-        setStatus('error');
-        setMessage(`Authentication failed: ${error.message}`);
+        // Verify storage
+        const storedToken = localStorage.getItem("authToken");
+        console.log("🔒 Verified stored token:", storedToken ? "Present" : "Missing");
         
-        // Clean up on error (tokenHandler.clearTokens() is called internally on error)
+        setStatus("success");
+        toast.success("Login successful! Redirecting to dashboard...");
+        
+        // Small delay to show success message
         setTimeout(() => {
-          window.location.href = `/login?error=${encodeURIComponent(error.message)}`;
-        }, 4000);
+          console.log("🔄 Redirecting to /landlord...");
+          navigate("/landlord", { replace: true });
+        }, 1000);
+        
+      } catch (error) {
+        console.error("❌ Error storing token:", error);
+        setStatus("error");
+        toast.error("Authentication failed: Could not store token");
+        setTimeout(() => navigate("/"), 2000);
       }
-    };
+    } else {
+      console.error("❌ No token provided in URL");
+      console.log("📋 All URL parameters:", Object.fromEntries(params.entries()));
+      setStatus("error");
+      toast.error("Login failed: No authentication token provided");
+      setTimeout(() => navigate("/"), 2000);
+    }
+  }, [location, navigate]);
 
-    processAuthCallback();
-  }, [searchParams, refreshAuth]);
-
-  const getStatusIcon = () => {
+  // Different UI states based on status
+  const renderContent = () => {
     switch (status) {
-      case 'processing':
-        return <Loader2 className="h-12 w-12 animate-spin text-blue-500" />;
-      case 'success':
-        return <CheckCircle2 className="h-12 w-12 text-green-500" />;
-      case 'error':
-        return <AlertCircle className="h-12 w-12 text-red-500" />;
+      case "success":
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+            <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-green-600 font-medium">Authentication successful! Redirecting...</p>
+          </div>
+        );
+      case "error":
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+            <div className="w-12 h-12 border-4 border-red-500 rounded-full flex items-center justify-center">
+              <span className="text-red-500 text-2xl">!</span>
+            </div>
+            <p className="text-red-600 font-medium">Authentication failed! Redirecting...</p>
+          </div>
+        );
       default:
-        return <Loader2 className="h-12 w-12 animate-spin text-blue-500" />;
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-blue-600 font-medium">Processing authentication...</p>
+            <p className="text-sm text-gray-500">Please wait while we verify your credentials</p>
+          </div>
+        );
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full">
-        <div className="mb-6 flex justify-center">
-          {getStatusIcon()}
-        </div>
-        
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          {status === 'processing' && 'Authenticating...'}
-          {status === 'success' && 'Success!'}
-          {status === 'error' && 'Authentication Failed'}
-        </h2>
-        
-        <p className="text-lg text-gray-600 mb-6">{message}</p>
-
-        {status === 'processing' && (
-          <div className="space-y-3">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-blue-500 h-2 rounded-full animate-pulse"></div>
-            </div>
-            <p className="text-sm text-gray-500">
-              Securely verifying your credentials...
-            </p>
-          </div>
-        )}
-
-        {status === 'error' && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-            <p className="text-red-800 text-sm">
-              Please try logging in again. If the problem continues, contact support.
-            </p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors"
-            >
-              Retry Authentication
-            </button>
-          </div>
-        )}
-
-        {status === 'success' && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <p className="text-green-800 text-sm">
-              Redirecting you to the application...
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return renderContent();
 };
 
-export default AuthCallbackRedirect;
+export default AuthCallback;
