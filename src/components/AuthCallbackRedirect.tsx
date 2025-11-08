@@ -12,17 +12,20 @@ const AuthCallbackRedirect: React.FC = () => {
 
   useEffect(() => {
     const processToken = async () => {
-      debugAuth.log('AuthCallbackRedirect: Starting token processing');
+      debugAuth.log(' AuthCallbackRedirect: Starting token processing');
       
+      // Get token from URL
       const token = searchParams.get('token');
-      debugAuth.log('AuthCallbackRedirect: Token from URL', { 
+      debugAuth.log(' Token from URL', { 
         hasToken: !!token,
-        tokenLength: token?.length 
+        tokenLength: token?.length,
+        fullUrl: window.location.href
       });
 
       if (!token) {
+        debugAuth.log('❌ No token found in URL');
         setStatus('error');
-        setMessage('No authentication token found in URL');
+        setMessage('No authentication token found. Please try logging in again.');
         setTimeout(() => {
           window.location.href = '/login?error=no_token';
         }, 3000);
@@ -33,42 +36,47 @@ const AuthCallbackRedirect: React.FC = () => {
         setStatus('processing');
         setMessage('Verifying token...');
 
-        // Step 1: Store token temporarily
+        // Step 1: Store token immediately
         sessionStorage.setItem('access_token', token);
-        debugAuth.log('✅ Token stored in sessionStorage');
+        localStorage.setItem('access_token', token); // Backup in localStorage
+        debugAuth.log('✅ Token stored in sessionStorage & localStorage');
 
-        // Step 2: Verify token with backend - FIXED VERSION
+        // Step 2: Verify token with backend - SIMPLIFIED FETCH
         debugAuth.log(' Calling verify endpoint...');
         
-        const verifyResponse = await fetch('https://rent-managment-system-user-magt.onrender.com/api/v1/auth/verify', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            // Remove Content-Type for GET requests to avoid CORS preflight
-          },
-          // Add credentials mode for CORS
-          credentials: 'omit', // or 'same-origin' depending on CORS config
+        const verifyResponse = await fetch(
+          'https://rent-managment-system-user-magt.onrender.com/api/v1/auth/verify', 
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              // NO Content-Type header for GET requests
+            },
+            credentials: 'omit', // Important for CORS
+          }
+        );
+
+        debugAuth.log(' Verify response received', {
+          status: verifyResponse.status,
+          ok: verifyResponse.ok,
+          headers: Object.fromEntries(verifyResponse.headers.entries())
         });
 
-        debugAuth.log('Verify response status:', verifyResponse.status);
-        debugAuth.log('Verify response ok:', verifyResponse.ok);
-
         if (!verifyResponse.ok) {
-          const errorText = await verifyResponse.text();
+          let errorData;
+          try {
+            errorData = await verifyResponse.text();
+          } catch {
+            errorData = 'Could not read error response';
+          }
+          
           debugAuth.log('❌ Token verification failed', {
             status: verifyResponse.status,
             statusText: verifyResponse.statusText,
-            error: errorText
+            error: errorData
           });
           
-          // More specific error handling
-          if (verifyResponse.status === 401) {
-            throw new Error('Token is invalid or expired');
-          } else if (verifyResponse.status === 403) {
-            throw new Error('Access forbidden');
-          } else {
-            throw new Error(`Server error: ${verifyResponse.status} ${verifyResponse.statusText}`);
-          }
+          throw new Error(`Verification failed: ${verifyResponse.status} ${verifyResponse.statusText}`);
         }
 
         const userData = await verifyResponse.json();
@@ -79,13 +87,15 @@ const AuthCallbackRedirect: React.FC = () => {
           id: userData.user_id,
           email: userData.email,
           role: userData.role,
-          full_name: userData.full_name || 'Property Owner',
+          full_name: userData.full_name || userData.email?.split('@')[0] || 'User',
           phone_number: userData.phone_number,
           preferred_language: userData.preferred_language || 'en',
-          preferred_currency: userData.preferred_currency || 'ETB'
+          preferred_currency: userData.preferred_currency || 'ETB',
+          // Add any other fields your app expects
         };
 
         sessionStorage.setItem('user_data', JSON.stringify(user));
+        localStorage.setItem('user_data', JSON.stringify(user)); // Backup
         debugAuth.log('✅ User data stored', user);
 
         // Step 4: Refresh auth context
@@ -93,23 +103,25 @@ const AuthCallbackRedirect: React.FC = () => {
         await refreshAuth();
 
         // Step 5: Clean URL and redirect
-        if (window.history.replaceState) {
-          const cleanUrl = window.location.origin + '/';
-          window.history.replaceState({}, document.title, cleanUrl);
-          debugAuth.log('✅ URL cleaned:', cleanUrl);
-        }
-
         setStatus('success');
-        setMessage('Authentication successful! Redirecting to dashboard...');
+        setMessage('Authentication successful! Redirecting...');
         
-        debugAuth.log('✅ Redirecting to main application');
+        debugAuth.log('✅ Cleaning URL and redirecting...');
+        
+        // Remove token from URL without reload
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
         setTimeout(() => {
           window.location.href = '/';
-        }, 2000);
+        }, 1500);
 
       } catch (error) {
-        console.error('AuthCallbackRedirect error:', error);
-        debugAuth.log('❌ Authentication failed', { error: error.message });
+        console.error(' AuthCallbackRedirect error:', error);
+        debugAuth.log('❌ Authentication process failed', { 
+          error: error.message,
+          stack: error.stack 
+        });
         
         setStatus('error');
         setMessage(`Authentication failed: ${error.message}`);
@@ -117,10 +129,12 @@ const AuthCallbackRedirect: React.FC = () => {
         // Clean up on error
         sessionStorage.removeItem('access_token');
         sessionStorage.removeItem('user_data');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_data');
         
         setTimeout(() => {
           window.location.href = `/login?error=${encodeURIComponent(error.message)}`;
-        }, 5000);
+        }, 4000);
       }
     };
 
@@ -142,41 +156,49 @@ const AuthCallbackRedirect: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="text-center max-w-md w-full">
-        <div className="mb-6">
+      <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full">
+        <div className="mb-6 flex justify-center">
           {getStatusIcon()}
         </div>
         
-        <h2 className="text-2xl font-bold mb-4">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
           {status === 'processing' && 'Authenticating...'}
           {status === 'success' && 'Success!'}
           {status === 'error' && 'Authentication Failed'}
         </h2>
         
-        <p className="text-lg mb-6">{message}</p>
+        <p className="text-lg text-gray-600 mb-6">{message}</p>
 
         {status === 'processing' && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div className="bg-blue-500 h-2 rounded-full animate-pulse"></div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Verifying your credentials with authentication service...
+            <p className="text-sm text-gray-500">
+              Securely verifying your credentials...
             </p>
           </div>
         )}
 
         {status === 'error' && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
             <p className="text-red-800 text-sm">
               Please try logging in again. If the problem continues, contact support.
             </p>
             <button 
               onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors"
             >
-              Retry
+              Retry Authentication
             </button>
+          </div>
+        )}
+
+        {status === 'success' && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-green-800 text-sm">
+              Redirecting you to the application...
+            </p>
           </div>
         )}
       </div>
