@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { debugAuth } from '@/utils/debug';
+import { tokenHandler } from '@/utils/tokenHandler'; // Import tokenHandler
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const AuthCallbackRedirect: React.FC = () => {
@@ -11,19 +12,13 @@ const AuthCallbackRedirect: React.FC = () => {
   const [message, setMessage] = useState<string>('Processing authentication...');
 
   useEffect(() => {
-    const processToken = async () => {
-      debugAuth.log(' AuthCallbackRedirect: Starting token processing');
+    const processAuthCallback = async () => {
+      debugAuth.log('AuthCallbackRedirect: Starting authentication callback processing');
       
-      // Get token from URL
       const token = searchParams.get('token');
-      debugAuth.log(' Token from URL', { 
-        hasToken: !!token,
-        tokenLength: token?.length,
-        fullUrl: window.location.href
-      });
 
       if (!token) {
-        debugAuth.log('❌ No token found in URL');
+        debugAuth.log('❌ No token found in URL for AuthCallbackRedirect');
         setStatus('error');
         setMessage('No authentication token found. Please try logging in again.');
         setTimeout(() => {
@@ -34,91 +29,31 @@ const AuthCallbackRedirect: React.FC = () => {
 
       try {
         setStatus('processing');
-        setMessage('Verifying token...');
+        setMessage('Verifying authentication token...');
 
-        // Step 1: Store token immediately
-        sessionStorage.setItem('access_token', token);
-        localStorage.setItem('access_token', token); // Backup in localStorage
-        debugAuth.log('✅ Token stored in sessionStorage & localStorage');
+        // Use tokenHandler to process the token from the URL
+        // This function handles verification, storage, and URL cleaning internally
+        const success = await tokenHandler.handleTokenFromURL();
 
-        // Step 2: Verify token with backend - SIMPLIFIED FETCH
-        debugAuth.log(' Calling verify endpoint...');
-        
-        const verifyResponse = await fetch(
-          'https://rent-managment-system-user-magt.onrender.com/api/v1/auth/verify', 
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              // NO Content-Type header for GET requests
-            },
-            credentials: 'omit', // Important for CORS
-          }
-        );
+        if (success) {
+          debugAuth.log('✅ Token processed successfully by tokenHandler');
+          setMessage('Setting up your session...');
+          await refreshAuth(); // Refresh AuthContext state after tokenHandler has done its job
 
-        debugAuth.log(' Verify response received', {
-          status: verifyResponse.status,
-          ok: verifyResponse.ok,
-          headers: Object.fromEntries(verifyResponse.headers.entries())
-        });
-
-        if (!verifyResponse.ok) {
-          let errorData;
-          try {
-            errorData = await verifyResponse.text();
-          } catch {
-            errorData = 'Could not read error response';
-          }
+          setStatus('success');
+          setMessage('Authentication successful! Redirecting...');
           
-          debugAuth.log('❌ Token verification failed', {
-            status: verifyResponse.status,
-            statusText: verifyResponse.statusText,
-            error: errorData
-          });
-          
-          throw new Error(`Verification failed: ${verifyResponse.status} ${verifyResponse.statusText}`);
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
+        } else {
+          debugAuth.log('❌ tokenHandler failed to process token');
+          throw new Error('Token processing failed.');
         }
 
-        const userData = await verifyResponse.json();
-        debugAuth.log('✅ Token verified successfully', userData);
-
-        // Step 3: Store complete user data
-        const user = {
-          id: userData.user_id,
-          email: userData.email,
-          role: userData.role,
-          full_name: userData.full_name || userData.email?.split('@')[0] || 'User',
-          phone_number: userData.phone_number,
-          preferred_language: userData.preferred_language || 'en',
-          preferred_currency: userData.preferred_currency || 'ETB',
-          // Add any other fields your app expects
-        };
-
-        sessionStorage.setItem('user_data', JSON.stringify(user));
-        localStorage.setItem('user_data', JSON.stringify(user)); // Backup
-        debugAuth.log('✅ User data stored', user);
-
-        // Step 4: Refresh auth context
-        setMessage('Setting up your session...');
-        await refreshAuth();
-
-        // Step 5: Clean URL and redirect
-        setStatus('success');
-        setMessage('Authentication successful! Redirecting...');
-        
-        debugAuth.log('✅ Cleaning URL and redirecting...');
-        
-        // Remove token from URL without reload
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-        
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1500);
-
       } catch (error) {
-        console.error(' AuthCallbackRedirect error:', error);
-        debugAuth.log('❌ Authentication process failed', { 
+        console.error('AuthCallbackRedirect error:', error);
+        debugAuth.log('❌ Authentication process failed in AuthCallbackRedirect', { 
           error: error.message,
           stack: error.stack 
         });
@@ -126,19 +61,14 @@ const AuthCallbackRedirect: React.FC = () => {
         setStatus('error');
         setMessage(`Authentication failed: ${error.message}`);
         
-        // Clean up on error
-        sessionStorage.removeItem('access_token');
-        sessionStorage.removeItem('user_data');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user_data');
-        
+        // Clean up on error (tokenHandler.clearTokens() is called internally on error)
         setTimeout(() => {
           window.location.href = `/login?error=${encodeURIComponent(error.message)}`;
         }, 4000);
       }
     };
 
-    processToken();
+    processAuthCallback();
   }, [searchParams, refreshAuth]);
 
   const getStatusIcon = () => {
