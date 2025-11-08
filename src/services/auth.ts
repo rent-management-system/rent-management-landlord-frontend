@@ -1,57 +1,30 @@
 import { AuthTokens, User, LoginCredentials, DecodedToken } from '@/types/auth';
-import { debugAuth } from '@/utils/debug';
 
 class AuthService {
   private readonly ACCESS_TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'user_data';
 
-  // Enhanced token management
+  // Token management
   public setTokens(tokens: AuthTokens, rememberMe: boolean = false): void {
     const storage = rememberMe ? localStorage : sessionStorage;
-    
-    try {
-      storage.setItem(this.ACCESS_TOKEN_KEY, tokens.access_token);
-      storage.setItem(this.REFRESH_TOKEN_KEY, tokens.refresh_token);
-      
-      debugAuth.log('Tokens stored successfully', {
-        storage: rememberMe ? 'localStorage' : 'sessionStorage',
-        hasAccessToken: !!tokens.access_token,
-        hasRefreshToken: !!tokens.refresh_token
-      });
-    } catch (error) {
-      console.error('Failed to store tokens:', error);
-      throw new Error('Failed to store authentication tokens');
-    }
+    console.log('AuthService: Setting tokens. RememberMe:', rememberMe, 'Access Token:', tokens.access_token ? 'Set' : 'Not Set', 'Refresh Token:', tokens.refresh_token ? 'Set' : 'Not Set');
+    storage.setItem(this.ACCESS_TOKEN_KEY, tokens.access_token);
+    storage.setItem(this.REFRESH_TOKEN_KEY, tokens.refresh_token);
   }
 
   public getAccessToken(): string | null {
-    try {
-      // Check both storage locations
-      const token = localStorage.getItem(this.ACCESS_TOKEN_KEY) || 
-                   sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
-      
-      debugAuth.log('Retrieving access token', {
-        found: !!token,
-        source: localStorage.getItem(this.ACCESS_TOKEN_KEY) ? 'localStorage' : 
-                sessionStorage.getItem(this.ACCESS_TOKEN_KEY) ? 'sessionStorage' : 'none'
-      });
-      
-      return token;
-    } catch (error) {
-      console.error('Error accessing storage:', error);
-      return null;
-    }
+    const token = localStorage.getItem(this.ACCESS_TOKEN_KEY) || 
+                  sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
+    console.log('AuthService: Getting access token. Token found:', !!token);
+    return token;
   }
 
   public getRefreshToken(): string | null {
-    try {
-      return localStorage.getItem(this.REFRESH_TOKEN_KEY) || 
-             sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
-    } catch (error) {
-      console.error('Error accessing storage:', error);
-      return null;
-    }
+    const token = localStorage.getItem(this.REFRESH_TOKEN_KEY) || 
+                  sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
+    console.log('AuthService: Getting refresh token. Token found:', !!token);
+    return token;
   }
 
   public clearTokens(): void {
@@ -60,46 +33,20 @@ class AuthService {
       storage.removeItem(this.REFRESH_TOKEN_KEY);
       storage.removeItem(this.USER_KEY);
     });
-    
-    debugAuth.log('All tokens cleared');
   }
 
-  // Enhanced user data management
+  // User data management
   public setUser(user: User): void {
-    try {
-      const storage = localStorage.getItem(this.ACCESS_TOKEN_KEY) ? localStorage : sessionStorage;
-      storage.setItem(this.USER_KEY, JSON.stringify(user));
-      
-      debugAuth.log('User data stored', {
-        userId: user.id,
-        userRole: user.role,
-        userEmail: user.email
-      });
-    } catch (error) {
-      console.error('Failed to store user data:', error);
-    }
+    const storage = localStorage.getItem(this.ACCESS_TOKEN_KEY) ? localStorage : sessionStorage;
+    console.log('AuthService: Setting user data:', user);
+    storage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   public getUser(): User | null {
-    try {
-      const userData = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
-      
-      if (userData) {
-        const user = JSON.parse(userData);
-        debugAuth.log('Retrieved user data', {
-          userId: user.id,
-          userRole: user.role,
-          userEmail: user.email
-        });
-        return user;
-      }
-      
-      debugAuth.log('No user data found in storage');
-      return null;
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      return null;
-    }
+    const userData = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
+    const user = userData ? JSON.parse(userData) : null;
+    console.log('AuthService: Getting user data:', user);
+    return user;
   }
 
   public clearUser(): void {
@@ -108,52 +55,28 @@ class AuthService {
     });
   }
 
-  // Enhanced token validation
+  // Token validation
   public isTokenExpired(token: string): boolean {
     try {
       const decoded: DecodedToken = JSON.parse(atob(token.split('.')[1]));
-      const isExpired = decoded.exp * 1000 < Date.now();
-      
-      debugAuth.log('Token expiration check', {
-        expiresAt: new Date(decoded.exp * 1000).toISOString(),
-        isExpired,
-        currentTime: new Date().toISOString()
-      });
-      
-      return isExpired;
+      return decoded.exp * 1000 < Date.now();
     } catch {
-      debugAuth.log('Token format invalid - considering expired');
       return true;
     }
   }
 
   public isValidToken(): boolean {
     const token = this.getAccessToken();
-    
-    if (!token) {
-      debugAuth.log('No token found - invalid');
-      return false;
-    }
-    
-    const isValid = !this.isTokenExpired(token);
-    debugAuth.log('Token validity check', { isValid });
-    
-    return isValid;
+    if (!token) return false;
+    return !this.isTokenExpired(token);
   }
 
-  // Enhanced role-based access control
+  // Role-based access control
   public hasRole(requiredRole: string): boolean {
     const user = this.getUser();
-    const hasRole = user?.role === requiredRole;
-    
-    debugAuth.log('Role check', {
-      requiredRole,
-      userRole: user?.role,
-      hasRequiredRole: hasRole,
-      userExists: !!user
-    });
-    
-    return hasRole;
+    const hasRequiredRole = user?.role === requiredRole;
+    console.log(`AuthService: Checking role. User role: ${user?.role}, Required role: ${requiredRole}, Result: ${hasRequiredRole}`);
+    return hasRequiredRole;
   }
 
   public isOwner(): boolean {
@@ -168,11 +91,10 @@ class AuthService {
     return this.hasRole('TENANT');
   }
 
-  // Enhanced login with better error handling
+  // Login/logout
   public async login(credentials: LoginCredentials, rememberMe: boolean = false): Promise<AuthTokens> {
-    debugAuth.log('Login attempt started', { email: credentials.username, rememberMe });
-    
     try {
+      console.log('AuthService: Attempting login for user:', credentials.username);
       const response = await fetch('https://rent-managment-system-user-magt.onrender.com/api/v1/auth/login', {
         method: 'POST',
         headers: {
@@ -183,16 +105,12 @@ class AuthService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        debugAuth.log('Login failed - server error', { status: response.status, error: errorData });
-        throw new Error(errorData.detail || `Login failed with status: ${response.status}`);
+        console.error('AuthService: Login failed. Response:', errorData);
+        throw new Error(errorData.detail || 'Login failed');
       }
 
       const tokens: AuthTokens = await response.json();
-      debugAuth.log('Login successful - tokens received', { 
-        hasAccessToken: !!tokens.access_token,
-        hasRefreshToken: !!tokens.refresh_token
-      });
-
+      console.log('AuthService: Login successful. Tokens received.');
       this.setTokens(tokens, rememberMe);
 
       // Fetch user profile after successful login
@@ -200,15 +118,14 @@ class AuthService {
 
       return tokens;
     } catch (error) {
-      debugAuth.log('Login failed - network error', { error: error.message });
-      throw new Error(error instanceof Error ? error.message : 'Login failed due to network error');
+      console.error('AuthService: Login caught error:', error);
+      throw new Error(error instanceof Error ? error.message : 'Login failed');
     }
   }
 
   private async fetchUserProfile(token: string): Promise<void> {
-    debugAuth.log('Fetching user profile started');
-    
     try {
+      console.log('AuthService: Fetching user profile...');
       const response = await fetch('https://rent-managment-system-user-magt.onrender.com/api/v1/users/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -217,26 +134,18 @@ class AuthService {
 
       if (response.ok) {
         const user: User = await response.json();
+        console.log('AuthService: User profile fetched successfully:', user);
         this.setUser(user);
-        debugAuth.log('User profile fetched successfully', { 
-          userId: user.id, 
-          userRole: user.role,
-          userEmail: user.email 
-        });
       } else {
         const errorData = await response.json();
-        debugAuth.log('Failed to fetch user profile', { status: response.status, error: errorData });
-        throw new Error(`Failed to fetch user profile: ${response.status}`);
+        console.error('AuthService: Failed to fetch user profile. Response:', errorData);
       }
     } catch (error) {
-      debugAuth.log('User profile fetch failed', { error: error.message });
-      console.error('Failed to fetch user profile:', error);
-      // Don't throw here - we still have tokens even if profile fetch fails
+      console.error('AuthService: Caught error fetching user profile:', error);
     }
   }
 
   public logout(): void {
-    debugAuth.log('Logout initiated');
     this.clearTokens();
     this.clearUser();
     
@@ -246,16 +155,12 @@ class AuthService {
     }
   }
 
-  // Enhanced token refresh
+  // Token refresh
   public async refreshToken(): Promise<AuthTokens> {
     const refreshToken = this.getRefreshToken();
-    
     if (!refreshToken) {
-      debugAuth.log('Refresh failed - no refresh token');
       throw new Error('No refresh token available');
     }
-
-    debugAuth.log('Token refresh attempt started');
 
     try {
       const response = await fetch('https://rent-managment-system-user-magt.onrender.com/api/v1/auth/refresh', {
@@ -267,43 +172,16 @@ class AuthService {
       });
 
       if (!response.ok) {
-        debugAuth.log('Token refresh failed - server error', { status: response.status });
         throw new Error('Token refresh failed');
       }
 
       const tokens: AuthTokens = await response.json();
-      const usingLocalStorage = !!localStorage.getItem(this.ACCESS_TOKEN_KEY);
-      
-      this.setTokens(tokens, usingLocalStorage);
-      
-      debugAuth.log('Token refresh successful', { 
-        usingLocalStorage,
-        hasNewAccessToken: !!tokens.access_token
-      });
+      this.setTokens(tokens, !!localStorage.getItem(this.ACCESS_TOKEN_KEY));
       
       return tokens;
     } catch (error) {
-      debugAuth.log('Token refresh failed - network error', { error: error.message });
       this.logout();
       throw error;
-    }
-  }
-
-  // New method: Force refresh user data
-  public async refreshUserData(): Promise<User | null> {
-    const token = this.getAccessToken();
-    
-    if (!token) {
-      debugAuth.log('Cannot refresh user data - no token');
-      return null;
-    }
-
-    try {
-      await this.fetchUserProfile(token);
-      return this.getUser();
-    } catch (error) {
-      debugAuth.log('User data refresh failed', { error: error.message });
-      return null;
     }
   }
 }

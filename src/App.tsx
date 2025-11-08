@@ -7,7 +7,6 @@ import Index from "./pages/Index";
 import Landlord from "./pages/Landlord";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
-import DebugAuth from '@/components/DebugAuth'; // Import DebugAuth
 
 const queryClient = new QueryClient();
 
@@ -16,7 +15,6 @@ const App = () => (
     <TooltipProvider>
         <Toaster />
         <Sonner />
-        <DebugAuth /> {/* Add DebugAuth component here */}
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landlord />} />

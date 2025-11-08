@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, LoginCredentials } from '@/types/auth';
+import { User, AuthTokens, LoginCredentials } from '@/types/auth';
 import { authService } from '@/services/auth';
-import { tokenHandler } from '@/utils/tokenHandler';
-import { debugAuth } from '@/utils/debug';
 
 interface AuthContextType {
   user: User | null;
@@ -14,7 +12,6 @@ interface AuthContextType {
   isOwner: boolean;
   isAdmin: boolean;
   isTenant: boolean;
-  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,98 +29,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const initializeAuth = async (): Promise<void> => {
-    debugAuth.log('AuthContext: Initializing authentication...');
-    
+    console.log('AuthContext: Initializing authentication...');
     try {
-      // First, check for tokens in URL (this handles redirects from login)
-      const hasURLToken = tokenHandler.handleTokenFromURL();
-      
-      if (hasURLToken) {
-        debugAuth.log('AuthContext: Token found in URL, processing...');
-        // The token handler will automatically verify and set user data
-        // Give it a moment to complete
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      // Now check stored user data and tokens
       const storedUser = authService.getUser();
       const token = authService.getAccessToken();
+      const isValid = authService.isValidToken();
 
-      debugAuth.log('AuthContext: Storage check', {
-        storedUser: !!storedUser,
-        hasToken: !!token,
-        tokenValid: token ? authService.isValidToken() : false
-      });
+      console.log('AuthContext: Stored User:', storedUser);
+      console.log('AuthContext: Access Token present:', !!token);
+      console.log('AuthContext: Token is valid:', isValid);
 
-      if (storedUser && token && authService.isValidToken()) {
-        debugAuth.log('AuthContext: Valid user and token found', {
-          userId: storedUser.id,
-          userRole: storedUser.role
-        });
+      if (storedUser && token && isValid) {
         setUser(storedUser);
+        console.log('AuthContext: User and valid token found. Setting user.');
       } else if (token && authService.isTokenExpired(token)) {
-        debugAuth.log('AuthContext: Token expired, attempting refresh');
+        console.log('AuthContext: Token expired. Attempting refresh...');
         // Attempt to refresh token
         try {
           await authService.refreshToken();
           const refreshedUser = authService.getUser();
           setUser(refreshedUser);
-          debugAuth.log('AuthContext: Token refreshed successfully', {
-            user: refreshedUser ? refreshedUser.role : 'none'
-          });
+          console.log('AuthContext: Token refreshed. User set:', refreshedUser);
         } catch (refreshError) {
-          debugAuth.log('AuthContext: Token refresh failed', { error: refreshError.message });
+          console.error('AuthContext: Token refresh failed:', refreshError);
           authService.logout();
+          console.log('AuthContext: Logout after refresh failure.');
         }
       } else {
-        debugAuth.log('AuthContext: No valid user/token found');
+        console.log('AuthContext: No valid user/token. Clearing tokens.');
         authService.clearTokens();
       }
     } catch (error) {
-      debugAuth.log('AuthContext: Initialization error', { error: error.message });
+      console.error('AuthContext: Auth initialization error:', error);
       authService.clearTokens();
     } finally {
       setIsLoading(false);
-      debugAuth.log('AuthContext: Initialization finished', { isLoading: false });
+      console.log('AuthContext: Initialization finished. IsLoading set to false.');
     }
   };
 
   const login = async (credentials: LoginCredentials, rememberMe: boolean = false): Promise<void> => {
+    console.log('AuthContext: Login initiated...');
     try {
       setIsLoading(true);
-      debugAuth.log('AuthContext: Login started', { email: credentials.username });
-      
       await authService.login(credentials, rememberMe);
       const user = authService.getUser();
-      
-      debugAuth.log('AuthContext: Login successful', { 
-        user: user ? `${user.email} (${user.role})` : 'none' 
-      });
-      
       setUser(user);
+      console.log('AuthContext: Login successful. User set:', user);
     } catch (error) {
-      debugAuth.log('AuthContext: Login failed', { error: error.message });
+      console.error('AuthContext: Login failed:', error);
       throw error;
     } finally {
       setIsLoading(false);
+      console.log('AuthContext: Login finished. IsLoading set to false.');
     }
   };
 
   const logout = (): void => {
-    debugAuth.log('AuthContext: Logout called');
     authService.logout();
     setUser(null);
   };
 
   const hasRole = (role: string): boolean => {
-    const result = authService.hasRole(role);
-    debugAuth.log('AuthContext: Role check', { requiredRole: role, result });
-    return result;
-  };
-
-  const refreshAuth = async (): Promise<void> => {
-    debugAuth.log('AuthContext: Manual auth refresh requested');
-    await initializeAuth();
+    return authService.hasRole(role);
   };
 
   const value: AuthContextType = {
@@ -136,16 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isOwner: authService.isOwner(),
     isAdmin: authService.isAdmin(),
     isTenant: authService.isTenant(),
-    refreshAuth,
   };
-
-  debugAuth.log('AuthContext: Context Value', {
-    isAuthenticated: !!user && authService.isValidToken(),
-    isOwner: authService.isOwner(),
-    isAdmin: authService.isAdmin(),
-    isTenant: authService.isTenant(),
-    User: user ? `${user.email} (${user.role})` : null
-  });
+  console.log('AuthContext: Context Value - isAuthenticated:', value.isAuthenticated, 'isOwner:', value.isOwner, 'isAdmin:', value.isAdmin, 'isTenant:', value.isTenant, 'User:', value.user);
 
   return (
     <AuthContext.Provider value={value}>
