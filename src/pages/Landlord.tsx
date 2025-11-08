@@ -270,24 +270,71 @@ const Landlord = () => {
   const [properties, setProperties] = useState<Property[]>([]); // Changed to dynamic properties
   const [isLoading, setIsLoading] = useState(false); // Added isLoading state
 
-  // Emergency fix - force refresh auth state on component mount
+  // EMERGENCY FIX: Handle authentication on component mount
   useEffect(() => {
-    const checkAuth = async () => {
-      if (!isAuthenticated || !isOwner) {
-        console.log(' AUTH ISSUE DETECTED - Attempting refresh...');
-        await refreshAuth();
+    const emergencyAuthFix = async () => {
+      debugAuth.log(' EMERGENCY AUTH FIX: Checking authentication state');
+      
+      // Check URL for token first (in case redirect happened)
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      
+      if (token && !isAuthenticated) {
+        debugAuth.log(' EMERGENCY FIX: Token found in URL but user not authenticated!');
+        debugAuth.log(' Processing token manually...');
         
-        // Check again after refresh
-        if (!isOwner) {
-          console.log(' Still not owner, checking storage manually...');
-          debugAuth.checkStorage();
-          debugAuth.checkURL();
+        // Manual token processing
+        try {
+          sessionStorage.setItem('access_token', token);
+          debugAuth.log('✅ Token stored in sessionStorage');
+          
+          // Verify token with backend
+          const response = await fetch('https://rent-managment-system-user-magt.onrender.com/api/v1/auth/verify', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            debugAuth.log('✅ Token verified successfully', userData);
+            
+            // Store user data manually
+            const user = {
+              id: userData.user_id,
+              email: userData.email,
+              role: userData.role,
+              full_name: userData.full_name || 'Property Owner',
+              phone_number: userData.phone_number,
+              preferred_language: userData.preferred_language || 'en',
+              preferred_currency: userData.preferred_currency || 'ETB'
+            };
+            
+            sessionStorage.setItem('user_data', JSON.stringify(user));
+            debugAuth.log('✅ User data stored', user);
+            
+            // Refresh auth context
+            await refreshAuth();
+            
+            // Clean URL
+            if (window.history.replaceState) {
+              const newUrl = window.location.pathname;
+              window.history.replaceState({}, document.title, newUrl);
+              debugAuth.log('✅ URL cleaned');
+            }
+            
+          } else {
+            throw new Error('Token verification failed');
+          }
+        } catch (error) {
+          debugAuth.log('❌ Emergency auth fix failed', { error: error.message });
         }
       }
     };
 
-    checkAuth();
-  }, [isAuthenticated, isOwner, refreshAuth]);
+    emergencyAuthFix();
+  }, [isAuthenticated, refreshAuth]);
 
   // Load properties on component mount
   useEffect(() => {
@@ -902,6 +949,24 @@ const Landlord = () => {
       </main>
 
       <Footer />
+      {/* Manual Token Check Button */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <button 
+          onClick={() => {
+            const token = sessionStorage.getItem('access_token');
+            const user = sessionStorage.getItem('user_data');
+            console.log(' MANUAL CHECK:', { 
+              token: token ? 'YES' : 'NO',
+              user: user ? JSON.parse(user) : 'NO USER'
+            });
+            debugAuth.checkStorage();
+            debugAuth.checkURL();
+          }}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg"
+        >
+          Check Auth Status
+        </button>
+      </div>
     </div>
   );
 };
