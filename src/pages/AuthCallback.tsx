@@ -8,28 +8,44 @@ const AuthCallback = () => {
   const [status, setStatus] = useState("processing");
 
   useEffect(() => {
+    console.log("🎯 AuthCallback component mounted");
+    console.log("📍 Full current URL:", window.location.href);
+    console.log("🔍 Location search:", location.search);
+    console.log("📁 Location pathname:", location.pathname);
+
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
+
+    console.log("🔑 Extracted token:", token ? `Present (${token.length} chars)` : "NULL");
 
     if (token) {
       try {
         // Store token
         localStorage.setItem("authToken", token);
+        console.log("✅ Token stored in localStorage successfully");
+        
+        // Verify storage
+        const storedToken = localStorage.getItem("authToken");
+        console.log("🔒 Verified stored token:", storedToken ? "Present" : "Missing");
         
         setStatus("success");
         toast.success("Login successful! Redirecting to dashboard...");
         
         // Small delay to show success message
         setTimeout(() => {
+          console.log("🔄 Redirecting to /landlord...");
           navigate("/landlord", { replace: true });
         }, 1000);
         
       } catch (error) {
+        console.error("❌ Error storing token:", error);
         setStatus("error");
         toast.error("Authentication failed: Could not store token");
         setTimeout(() => navigate("/"), 2000);
       }
     } else {
+      console.error("❌ No token provided in URL");
+      console.log("📋 All URL parameters:", Object.fromEntries(params.entries()));
       setStatus("error");
       toast.error("Login failed: No authentication token provided");
       setTimeout(() => navigate("/"), 2000);
