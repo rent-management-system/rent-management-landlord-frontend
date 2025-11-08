@@ -488,7 +488,7 @@ const Landlord = () => {
                 <CardHeader className="text-center pb-6">
                   <Badge variant="secondary" className="w-fit mx-auto mb-2">
                     <DollarSign className="h-3 w-3 mr-1" />
-                    Pay-per-post • 500 ETB
+                    {t("pay_per_post_fee")}
                   </Badge>
                   <CardDescription className="text-base">
                     ንብረትዎን ለመዘርዘር ከታች ያሉትን ዝርዝሮች ይሙሉ
@@ -501,7 +501,7 @@ const Landlord = () => {
                     <div className="space-y-6">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-1 h-6 bg-primary rounded-full"></div>
-                        <h3 className="text-xl font-semibold">Basic Information</h3>
+                        <h3 className="text-xl font-semibold">{t("basic_information")}</h3>
                       </div>
                       
                       <div className="grid md:grid-cols-2 gap-6">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Menu, User, X } from "lucide-react"; // X icon included
+import { Menu, User, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -19,10 +19,8 @@ const Header: React.FC = () => {
 
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
-    // optionally: closeNav();
   };
 
-  // lock body scrolling when drawer is open
   useEffect(() => {
     if (isNavOpen) {
       document.body.style.overflow = "hidden";
@@ -34,7 +32,6 @@ const Header: React.FC = () => {
     };
   }, [isNavOpen]);
 
-  // Function to handle external navigation
   const handleExternalLink = (url: string) => {
     closeNav();
     window.open(url, "_blank");
@@ -84,7 +81,7 @@ const Header: React.FC = () => {
       </nav>
 
       <div className="flex items-center">
-        {/* Desktop right controls */}
+        {/* Desktop right controls - FIXED ACCOUNT DROPDOWN */}
         <div className="nav-child3 -mr-4 hidden md:flex items-center space-x-3">
           <select
             className="language-selector-desktop bg-transparent border p-1 rounded"
@@ -99,11 +96,34 @@ const Header: React.FC = () => {
             <option value="om">{t("afan_oromo_option")}</option>
           </select>
 
+          {/* WORKING Account Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
+              <div className="flex gap-1 items-center cursor-pointer account-container">
+                <svg 
+                  width="28" 
+                  height="28" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="1.5"
+                  className="text-[#222a2f] opacity-90"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <svg 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2"
+                  className="text-[#222a2f]"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>{t("login")}</DropdownMenuItem>
@@ -112,16 +132,67 @@ const Header: React.FC = () => {
           </DropdownMenu>
         </div>
 
-        {/* Mobile: hamburger opens custom drawer */}
+        {/* Mobile: HAMBURGER TOGGLE WITH INLINE STYLES */}
         <div className="md:hidden ml-2">
-          <button
+          <div
+            className={`hamburger-icon ${isNavOpen && "gap"}`}
             onClick={toggleNav}
-            aria-expanded={isNavOpen}
-            aria-label="Open menu"
-            className="p-2 rounded-md"
+            style={{
+              paddingRight: "2px",
+              transform: "scale(0.8)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+              gap: "4px",
+              position: "absolute",
+              height: "44px",
+              width: "60px",
+              top: "1.4rem",
+              right: "1rem",
+              zIndex: 1000,
+              cursor: "pointer",
+              borderRadius: "5px",
+              transition: "all 0.2s ease-in-out",
+              background: "rgb(255 255 255 / 43%)",
+              boxShadow: isNavOpen ? "0px 0px 30px rgba(0, 0, 0, 0.1)" : "none"
+            }}
           >
-            <Menu className="h-5 w-5" />
-          </button>
+            <div 
+              className={`icon-1 ${isNavOpen && "a"}`}
+              style={{
+                width: isNavOpen ? "37px" : "32px",
+                height: "3px",
+                backgroundColor: "black",
+                transition: "all 400ms ease",
+                transform: isNavOpen ? "rotate(40deg)" : "none",
+                position: "relative",
+                top: isNavOpen ? "3px" : "0"
+              }}
+            ></div>
+            <div 
+              className={`icon-2 ${isNavOpen && "c"}`}
+              style={{
+                width: "32px",
+                height: "3px",
+                backgroundColor: "black",
+                transition: "all 400ms ease",
+                opacity: isNavOpen ? "0" : "1"
+              }}
+            ></div>
+            <div 
+              className={`icon-3 ${isNavOpen && "b"}`}
+              style={{
+                width: isNavOpen ? "37px" : "32px",
+                height: "3px",
+                backgroundColor: "black",
+                transition: "all 400ms ease",
+                transform: isNavOpen ? "rotate(-40deg)" : "none",
+                position: "relative",
+                bottom: isNavOpen ? "2px" : "0"
+              }}
+            ></div>
+          </div>
         </div>
       </div>
 
@@ -134,68 +205,80 @@ const Header: React.FC = () => {
         aria-hidden={!isNavOpen}
       />
 
-      {/* DRAWER (right side) */}
-      <aside
-        className={`fixed top-0 right-0 h-screen w-[80vw] max-w-[420px] bg-[#222a2f] text-white z-[9999] transform transition-transform duration-300 shadow-lg
-          ${isNavOpen ? "translate-x-0" : "translate-x-full"}
-        `}
+      {/* ORIGINAL MOBILE NAVIGATION */}
+      <div 
+        id="nav" 
+        className={`fixed top-0 right-0 h-screen bg-[#222a2f] text-white z-[9999] transition-all duration-600 ease-[cubic-bezier(0.62,0.04,0.3,1.56)] delay-100 ${
+          isNavOpen ? "w-[53%] opacity-100" : "w-0 opacity-0"
+        }`}
         aria-hidden={!isNavOpen}
-        role="dialog"
-        aria-label="Mobile navigation"
       >
-        {/* Close / X button */}
-        <div className="flex items-center justify-end p-4">
-          <button
-            onClick={closeNav}
-            aria-label="Close menu"
-            className="p-2 rounded-md hover:bg-white/10"
-          >
-            <X className="h-5 w-5 text-white" />
-          </button>
-        </div>
-
-        {/* Drawer content */}
-        <nav className="px-6 pb-8 flex flex-col space-y-6">
-          <button
-            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/")}
-            className="text-[1.25rem] font-medium text-left"
-          >
-            {t("home")}
-          </button>
-
-          <button
-            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/#about")}
-            className="text-[1.25rem] font-medium text-left"
-          >
-            {t("about")}
-          </button>
-
-          <button
-            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/#product")}
-            className="text-[1.25rem] font-medium text-left"
-          >
-            {t("properties")}
-          </button>
-
-          <button
-            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/#testimonials")}
-            className="text-[1.25rem] font-medium text-left"
-          >
-            {t("testimonials")}
-          </button>
-
-          <button
-            onClick={() => handleExternalLink("https://rent-management-system-tau.vercel.app/contact")}
-            className="text-[1.25rem] font-medium text-left"
-          >
-            {t("contact")}
-          </button>
-
-          <div className="mt-4">
+        <ul className="ul" style={{ margin: 0, position: "absolute", top: "30%", left: "7vw", padding: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <li className="li li1" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
+            <a 
+              href="https://rent-management-system-tau.vercel.app/" 
+              onClick={closeNav}
+              style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
+            >
+              {t("home")}
+            </a>
+          </li>
+          <li className="li li2" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
+            <a 
+              href="https://rent-management-system-tau.vercel.app/#about" 
+              onClick={closeNav}
+              style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
+            >
+              {t("about")}
+            </a>
+          </li>
+          <li className="li li3" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
+            <a 
+              href="https://rent-management-system-tau.vercel.app/#product" 
+              onClick={closeNav}
+              style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
+            >
+              {t("properties")}
+            </a>
+          </li>
+          <li className="li li4" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
+            <a 
+              href="https://rent-management-system-tau.vercel.app/#testimonials" 
+              onClick={closeNav}
+              style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
+            >
+              {t("testimonials")}
+            </a>
+          </li>
+          <li className="li li5" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
+            <a 
+              href="https://rent-management-system-tau.vercel.app/contact" 
+              onClick={closeNav}
+              style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
+            >
+              {t("contact")}
+            </a>
+          </li>
+          <li className="li">
             <select
-              className="w-full p-2 rounded-md bg-[#333] border border-gray-600 text-white"
+              className="sign"
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
+              style={{
+                display: "flex",
+                padding: "0 2rem",
+                backgroundColor: "transparent",
+                borderRadius: "0.3rem",
+                alignItems: "center",
+                color: "#d8ccccfc",
+                fontSize: "1.3rem",
+                marginTop: "1rem",
+                transition: "all 0.3s",
+                borderRight: "3px solid",
+                borderTop: "1px solid",
+                borderBottom: "3px solid",
+                borderLeft: "1px solid"
+              }}
             >
               <option value="" disabled>
                 {t("select_language")}
@@ -204,18 +287,9 @@ const Header: React.FC = () => {
               <option value="en">{t("english_option")}</option>
               <option value="om">{t("afan_oromo_option")}</option>
             </select>
-          </div>
-
-          <div className="mt-auto pb-6">
-            <button className="w-full rounded-md border border-white/20 py-2">
-              {t("login")}
-            </button>
-            <button className="w-full rounded-md bg-white text-black mt-3 py-2">
-              {t("signUp")}
-            </button>
-          </div>
-        </nav>
-      </aside>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };
