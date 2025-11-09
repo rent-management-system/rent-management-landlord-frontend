@@ -57,57 +57,7 @@ const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: num
   );
 };
 
-// Stats Section Component
-const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending: number; approved: number; rejected: number } | null }) => {
-  const { t } = useTranslation();
-  
-  return (
-    <section className="py-16 bg-gradient-to-br from-background to-muted/50">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          {/* Total Listings */}
-          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-            <div className="relative inline-block">
-              <AnimatedCounter 
-                end={metrics?.total_listings || 0} 
-                duration={2500} 
-              />
-            </div>
-            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-              {t("total_listings")}
-            </p>
-          </div>
 
-          {/* Approved Listings */}
-          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-            <div className="relative inline-block">
-              <AnimatedCounter 
-                end={metrics?.approved || 0} 
-                duration={3000} 
-              />
-            </div>
-            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-              {t("approved_listings")}
-            </p>
-          </div>
-
-          {/* Pending Listings */}
-          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-            <div className="relative inline-block">
-              <AnimatedCounter 
-                end={metrics?.pending || 0} 
-                duration={1500} 
-              />
-            </div>
-            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-              {t("pending_listings")}
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 // Enhanced Property Card Component
 const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: Property; onEdit: () => void; onViewDetails: () => void }) => {
@@ -410,6 +360,58 @@ const Landlord = () => {
       setIsSubmitting(false);
     }
   };
+
+// Stats Section Component
+const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending: number; approved: number; rejected: number } | null }) => {
+  const { t } = useTranslation();
+  
+  return (
+    <section className="py-16 bg-gradient-to-br from-background to-muted/50">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          {/* Total Listings */}
+          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
+            <div className="relative inline-block">
+              <AnimatedCounter 
+                end={metrics?.total_listings || 0} 
+                duration={2500} 
+              />
+            </div>
+            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
+              {t("total_listings")}
+            </p>
+          </div>
+
+          {/* Approved Listings */}
+          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
+            <div className="relative inline-block">
+              <AnimatedCounter 
+                end={metrics?.approved || 0} 
+                duration={3000} 
+              />
+            </div>
+            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
+              {t("approved_listings")}
+            </p>
+          </div>
+
+          {/* Pending Listings */}
+          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
+            <div className="relative inline-block">
+              <AnimatedCounter 
+                end={metrics?.pending || 0} 
+                duration={1500} 
+              />
+            </div>
+            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
+              {t("pending_listings")}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
   const amenitiesIcons = {
     WiFi: Wifi,

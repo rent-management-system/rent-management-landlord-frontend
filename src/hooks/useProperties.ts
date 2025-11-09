@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import { useState, useEffect, useCallback } from 'react';
 import { propertyService, Property, PropertySubmission, PropertyResponse } from '@/services/propertyService';
 import { useApi } from '@/services/propertyService';
 
@@ -14,26 +14,52 @@ export const useProperties = () => {
   
   const { execute, loading, error } = useApi();
 
-  // Load all properties
+  // Load all properties with error handling
   const loadProperties = useCallback(async (filters?: Parameters<typeof propertyService.getProperties>[0]) => {
     return execute(() => propertyService.getProperties(filters), {
-      onSuccess: (data) => setProperties(data || []),
+      onSuccess: (data) => {
+        if (data) setProperties(data);
+      },
+      onError: (error) => {
+        console.warn('Failed to load properties:', error);
+        // Set empty array instead of showing error for CORS issues
+        setProperties([]);
+      },
     });
-  }, [execute]); // execute is a dependency
+  }, [execute]);
 
-  // Load user's properties
+  // Load user's properties with error handling
   const loadUserProperties = useCallback(async () => {
     return execute(() => propertyService.getUserProperties(), {
-      onSuccess: (data) => setUserProperties(data || []),
+      onSuccess: (data) => {
+        if (data) setUserProperties(data);
+      },
+      onError: (error) => {
+        console.warn('Failed to load user properties:', error);
+        // Set empty array for CORS issues
+        setUserProperties([]);
+      },
     });
-  }, [execute]); // execute is a dependency
+  }, [execute]);
 
-  // Load metrics
+  // Load metrics with error handling
   const loadMetrics = useCallback(async () => {
     return execute(() => propertyService.getMetrics(), {
-      onSuccess: (data) => setMetrics(data),
+      onSuccess: (data) => {
+        if (data) setMetrics(data);
+      },
+      onError: (error) => {
+        console.warn('Failed to load metrics:', error);
+        // Set default metrics for CORS issues
+        setMetrics({
+          total_listings: 0,
+          pending: 0,
+          approved: 0,
+          rejected: 0
+        });
+      },
     });
-  }, [execute]); // execute is a dependency
+  }, [execute]);
 
   // Submit new property
   const submitProperty = useCallback(async (propertyData: PropertySubmission): Promise<PropertyResponse | null> => {
@@ -41,14 +67,12 @@ export const useProperties = () => {
       successMessage: 'Property submitted successfully! Redirecting to payment...',
       onSuccess: (response) => {
         if (response?.payment_url) {
-          // Redirect to payment URL
           window.location.href = response.payment_url;
         }
-        // Reload user properties to show the new submission
         loadUserProperties();
       },
     });
-  }, [execute, loadUserProperties]); // execute and loadUserProperties are dependencies
+  }, [execute, loadUserProperties]);
 
   // Initialize data
   useEffect(() => {

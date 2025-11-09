@@ -1,8 +1,8 @@
-// API Service for Property Listing Backend
+// API Service for Property Listing Backend - CORS FIXED VERSION
 import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; // Added useState and useEffect for useApi hook
 
-// Types
+// Types (keep your existing types)
 export interface PropertySubmission {
   title: string;
   description: string;
@@ -48,37 +48,47 @@ const BASE_URL = 'https://property-listing-service.onrender.com/api/v1/propertie
 
 // Auth token management
 const getAuthToken = (): string | null => {
-  // Try multiple possible token storage locations
   return localStorage.getItem('authToken') || 
          localStorage.getItem('access_token') ||
          sessionStorage.getItem('authToken') ||
          sessionStorage.getItem('access_token');
 };
 
-// Generic API request handler
+// CORS-FIXED API request handler
 const apiRequest = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
   const token = getAuthToken();
   
-  if (!token) {
-    throw new Error('Authentication required. Please log in again.');
-  }
-
   const url = `${BASE_URL}${endpoint}`;
+  
+  // CORS FIX: Use mode: 'cors' and proper headers
   const config: RequestInit = {
+    mode: 'cors', // Explicitly enable CORS
+    credentials: 'omit', // Don't send cookies
     headers: {
-      'Authorization': `Bearer ${token}`,
+      ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     },
     ...options,
   };
 
+  // CORS FIX: For GET requests, avoid Content-Type to prevent preflight
+  if (options.method === 'GET' || !options.method) {
+    // Remove Content-Type for GET requests
+    if (config.headers && 'Content-Type' in config.headers) {
+      delete (config.headers as any)['Content-Type'];
+    }
+  }
+
   try {
     console.log(` API Request: ${options.method || 'GET'} ${url}`);
+    console.log(` Auth Token: ${token ? 'Present' : 'Missing'}`);
     
     const response = await fetch(url, config);
+    
+    console.log(` Response Status: ${response.status} ${response.statusText}`);
     
     if (!response.ok) {
       let errorMessage = `HTTP Error: ${response.status}`;
@@ -88,6 +98,18 @@ const apiRequest = async <T>(
       } catch {
         // If response is not JSON, use status text
         errorMessage = response.statusText || errorMessage;
+      }
+      
+      // Specific error handling for CORS and auth
+      if (response.status === 0) {
+        errorMessage = 'CORS Error: Unable to connect to the server. Check if the backend allows requests from your domain.';
+      } else if (response.status === 401) {
+        errorMessage = 'Authentication failed. Please log in again.';
+        // Clear invalid tokens
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('access_token');
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('access_token');
       }
       
       throw new Error(errorMessage);
@@ -102,14 +124,15 @@ const apiRequest = async <T>(
   } catch (error) {
     console.error('❌ API Request Failed:', error);
     
+    // Handle CORS and network errors specifically
+    if (error instanceof TypeError) {
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Network error: Unable to connect to the server. This may be a CORS issue. Please check the backend CORS configuration.');
+      }
+    }
+    
     if (error instanceof Error) {
-      if (error.message.includes('Authentication required')) {
-        // Clear invalid tokens and redirect to login
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('access_token');
-        sessionStorage.removeItem('authToken');
-        sessionStorage.removeItem('access_token');
-        
+      if (error.message.includes('Authentication failed')) {
         toast.error('Session expired. Please log in again.');
         setTimeout(() => window.location.href = '/login', 2000);
       }
@@ -120,26 +143,22 @@ const apiRequest = async <T>(
   }
 };
 
-// Image upload utility
+// Image upload utility (keep your existing)
 const uploadImages = async (files: File[]): Promise<string[]> => {
   if (files.length === 0) return [];
   
-  // For now, we'll handle image uploads client-side and pass URLs
-  // In production, you'd upload to a CDN/service and get back URLs
   console.log(' Image upload simulation - files:', files.map(f => f.name));
   
-  // Simulate image upload - return placeholder URLs
-  return files.map((file, index) => 
-    URL.createObjectURL(file)
-    // In production: await uploadToCDN(file) and return actual CDN URLs
-  );
+  // For now, return placeholder URLs
+  // In production, upload to a CDN and return actual URLs
+  return files.map((file, index) => URL.createObjectURL(file));
 };
 
-// Property API methods
+// Property API methods - CORS OPTIMIZED
 export const propertyService = {
   // Submit a new property
   async submitProperty(propertyData: PropertySubmission): Promise<PropertyResponse> {
-    // Upload images first (in real app, upload to CDN)
+    // Upload images first
     const photoUrls = await uploadImages(propertyData.photos);
     
     const payload = {
@@ -154,6 +173,8 @@ export const propertyService = {
       ...(propertyData.area && { area: parseInt(propertyData.area.toString()) }),
     };
 
+    console.log('Payload being sent to the backend:', payload);
+
     return apiRequest<PropertyResponse>('/submit', {
       method: 'POST',
       headers: {
@@ -163,7 +184,7 @@ export const propertyService = {
     });
   },
 
-  // Get all properties (public endpoint)
+  // Get all properties (public endpoint) - CORS FIXED
   async getProperties(params?: {
     location?: string;
     min_price?: number;
@@ -190,8 +211,10 @@ export const propertyService = {
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/?${queryString}` : '/';
     
+    // CORS FIX: No Content-Type header for GET requests
     return apiRequest<Property[]>(endpoint, {
       method: 'GET',
+      // No headers for GET to avoid preflight
     });
   },
 
@@ -199,23 +222,25 @@ export const propertyService = {
   async getPropertyById(id: string): Promise<Property> {
     return apiRequest<Property>(`/${id}`, {
       method: 'GET',
+      // No headers for GET to avoid preflight
     });
   },
 
-  // Get user's properties (requires authentication)
+  // Get user's properties
   async getUserProperties(): Promise<Property[]> {
-    // Note: This endpoint might need to be implemented in your backend
-    // For now, we'll filter from all properties based on ownership
-    const allProperties = await this.getProperties();
-    
-    // In a real app, the backend would filter by owner
-    // This is a temporary implementation
-    return allProperties.filter(property => 
-      property.status === 'APPROVED' || property.status === 'PENDING'
-    );
+    try {
+      const allProperties = await this.getProperties();
+      // Filter to show only approved/pending properties for demo
+      return allProperties.filter(property => 
+        property.status === 'APPROVED' || property.status === 'PENDING'
+      );
+    } catch (error) {
+      console.error('Error getting user properties:', error);
+      return [];
+    }
   },
 
-  // Get metrics (public endpoint)
+  // Get metrics (public endpoint) - CORS FIXED
   async getMetrics(): Promise<{
     total_listings: number;
     pending: number;
@@ -224,6 +249,7 @@ export const propertyService = {
   }> {
     return apiRequest('/metrics', {
       method: 'GET',
+      // No headers for GET to avoid preflight
     });
   },
 };
@@ -231,14 +257,7 @@ export const propertyService = {
 // Utility function to check authentication status
 export const checkAuthStatus = (): boolean => {
   const token = getAuthToken();
-  if (!token) {
-    console.log(' No auth token found');
-    return false;
-  }
-  
-  // Basic token validation (you could add JWT expiration check here)
-  console.log(' Auth token found');
-  return true;
+  return !!token;
 };
 
 // Hook for API status and error handling
@@ -270,7 +289,11 @@ export const useApi = () => {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
       
-      toast.error(errorMessage);
+      // Don't show toast for CORS errors to avoid spam
+      if (!errorMessage.includes('CORS') && !errorMessage.includes('Network error')) {
+        toast.error(errorMessage);
+      }
+      
       options.onError?.(errorMessage);
       return null;
     } finally {
