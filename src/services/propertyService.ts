@@ -1,6 +1,6 @@
 // API Service for Property Listing Backend - CORS FIXED VERSION
 import { toast } from 'sonner';
-import { useState, useEffect } from 'react'; // Added useState and useEffect for useApi hook
+import { useState, useEffect, useCallback } from 'react'; // Added useState and useEffect for useApi hook
 
 // Types (keep your existing types)
 export interface PropertySubmission {
@@ -265,7 +265,7 @@ export const useApi = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const execute = async <T>(
+  const execute = useCallback(async <T>(
     operation: () => Promise<T>,
     options: {
       successMessage?: string;
@@ -299,7 +299,7 @@ export const useApi = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return { execute, loading, error };
 };
