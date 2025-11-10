@@ -143,44 +143,45 @@ const apiRequest = async <T>(
   }
 };
 
-// Image upload utility (keep your existing)
-const uploadImages = async (files: File[]): Promise<string[]> => {
-  if (files.length === 0) return [];
-  
-  console.log(' Image upload simulation - files:', files.map(f => f.name));
-  
-  // For now, return placeholder URLs
-  // In production, upload to a CDN and return actual URLs
-  return files.map((file, index) => URL.createObjectURL(file));
-};
-
 // Property API methods - CORS OPTIMIZED
 export const propertyService = {
   // Submit a new property
   async submitProperty(propertyData: PropertySubmission): Promise<PropertyResponse> {
-    // Upload images first
-    const photoUrls = await uploadImages(propertyData.photos);
-    
-    const payload = {
-      title: propertyData.title,
-      description: propertyData.description,
-      location: propertyData.location,
-      price: parseFloat(propertyData.price.toString()),
-      amenities: propertyData.amenities,
-      photos: photoUrls,
-      ...(propertyData.bedrooms && { bedrooms: parseInt(propertyData.bedrooms.toString()) }),
-      ...(propertyData.bathrooms && { bathrooms: parseInt(propertyData.bathrooms.toString()) }),
-      ...(propertyData.area && { area: parseInt(propertyData.area.toString()) }),
-    };
+    const formData = new FormData();
 
-    console.log('Payload being sent to the backend:', payload);
+    // Append text fields
+    formData.append('title', propertyData.title);
+    formData.append('description', propertyData.description);
+    formData.append('location', propertyData.location);
+    formData.append('price', propertyData.price.toString());
+
+    // Append amenities array
+    propertyData.amenities.forEach(amenity => {
+      formData.append('amenities', amenity);
+    });
+
+    // Append optional fields if they exist
+    if (propertyData.bedrooms) {
+      formData.append('bedrooms', propertyData.bedrooms.toString());
+    }
+    if (propertyData.bathrooms) {
+      formData.append('bathrooms', propertyData.bathrooms.toString());
+    }
+    if (propertyData.area) {
+      formData.append('area', propertyData.area.toString());
+    }
+
+    // Append each photo file
+    propertyData.photos.forEach((file) => {
+      formData.append('photos', file, file.name);
+    });
+
+    console.log('FormData being sent to the backend:', formData);
 
     return apiRequest<PropertyResponse>('/submit', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
+      // DO NOT set Content-Type header. The browser does it automatically for FormData.
+      body: formData,
     });
   },
 
