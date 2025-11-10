@@ -171,10 +171,10 @@ export const propertyService = {
       formData.append('area', propertyData.area.toString());
     }
 
-    // Append each photo file
-    propertyData.photos.forEach((file) => {
-      formData.append('photos', file, file.name);
-    });
+    // Append the first photo file if available
+    if (propertyData.photos && propertyData.photos.length > 0) {
+      formData.append('file', propertyData.photos[0], propertyData.photos[0].name);
+    }
 
     console.log('FormData being sent to the backend:', formData);
 
