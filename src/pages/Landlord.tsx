@@ -689,7 +689,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                         type="file"
                         id="photos"
                         multiple
-                        accept="image/*"
+                        accept="image/jpeg, image/png, image/webp"
                         onChange={handleImageUpload}
                         className="hidden"
                       />

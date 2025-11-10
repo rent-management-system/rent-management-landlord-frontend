@@ -191,7 +191,7 @@
   "post_payment_message": "Your property will be published after successful payment",
   "bedrooms_placeholder": "e.g., 3",
   "bathrooms_placeholder": "e.g., 2",
-  "image_upload_format": "PNG, JPG up to 10MB",
+  "image_upload_format": "JPEG, PNG, WebP up to 10MB",
   "total_listings": "Total Listings",
   "edit_coming_soon": "Edit functionality coming soon",
   "view_details_coming_soon": "View details functionality coming soon",
