@@ -312,6 +312,34 @@ const Landlord = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // --- FORM VALIDATION ---
+    if (!formData.title.trim()) {
+      toast.error("Property title is required.");
+      return;
+    }
+    if (!formData.location.trim()) {
+      toast.error("Location is required.");
+      return;
+    }
+    if (!formData.house_type) {
+      toast.error("Please select a house type.");
+      return;
+    }
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      toast.error("A valid price is required.");
+      return;
+    }
+    if (!formData.description.trim()) {
+      toast.error("Description is required.");
+      return;
+    }
+    if (uploadedImages.length === 0) {
+      toast.error("At least one photo must be uploaded.");
+      return;
+    }
+    // --- END VALIDATION ---
+
     setIsSubmitting(true);
 
     try {
@@ -321,7 +349,7 @@ const Landlord = () => {
         description: formData.description,
         location: formData.location,
         price: parseFloat(formData.price),
-        house_type: formData.house_type, // Added house_type
+        house_type: formData.house_type,
         amenities: Object.entries(formData.amenities)
           .filter(([_, checked]) => checked)
           .map(([amenity]) => amenity),
@@ -335,8 +363,6 @@ const Landlord = () => {
       const result = await actions.submitProperty(submissionData);
       
       if (result) {
-        // Form will be reset after successful submission and redirect
-        // The payment redirect happens automatically in the service
         toast.success("Property submitted successfully! Redirecting to payment...");
         
         // Reset form
@@ -348,7 +374,7 @@ const Landlord = () => {
           bathrooms: "",
           area: "",
           description: "",
-          house_type: "", // Reset house_type
+          house_type: "",
           amenities: {
             WiFi: false,
             Parking: false,
@@ -362,7 +388,7 @@ const Landlord = () => {
         setUploadedImages([]);
       }
     } catch (error) {
-      // Error handling is done in the service layer
+      // Error is already handled and toasted by the useApi hook/service layer
       console.error('Submission error:', error);
     } finally {
       setIsSubmitting(false);
