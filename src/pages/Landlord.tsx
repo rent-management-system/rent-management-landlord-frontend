@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import FrontPage from "./FrontPage";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Building2, Upload, CheckCircle2, Home, MapPin, DollarSign, Bed, Bath, 
   Square, Wifi, Car, Shield, Dumbbell, Trees, Building, Eye, Star, 
@@ -254,6 +255,7 @@ const Landlord = () => {
     bathrooms: "",
     area: "",
     description: "",
+    house_type: "", // Added house_type
     amenities: {
       WiFi: false,
       Parking: false,
@@ -280,6 +282,10 @@ const Landlord = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleAmenityChange = (amenity: string) => {
@@ -315,6 +321,7 @@ const Landlord = () => {
         description: formData.description,
         location: formData.location,
         price: parseFloat(formData.price),
+        house_type: formData.house_type, // Added house_type
         amenities: Object.entries(formData.amenities)
           .filter(([_, checked]) => checked)
           .map(([amenity]) => amenity),
@@ -341,6 +348,7 @@ const Landlord = () => {
           bathrooms: "",
           area: "",
           description: "",
+          house_type: "", // Reset house_type
           amenities: {
             WiFi: false,
             Parking: false,
@@ -561,6 +569,29 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                             className="h-12"
                             required
                           />
+                        </div>
+
+                        {/* House Type Dropdown */}
+                        <div className="space-y-2">
+                          <Label htmlFor="house_type" className="text-sm font-medium flex items-center gap-2">
+                            <Home className="h-4 w-4" />
+                            {t("houseType")}
+                          </Label>
+                          <Select
+                            name="house_type"
+                            value={formData.house_type}
+                            onValueChange={(value) => handleSelectChange("house_type", value)}
+                            required
+                          >
+                            <SelectTrigger className="h-12">
+                              <SelectValue placeholder={t("selectHouseType")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="condominium">{t("condominium")}</SelectItem>
+                              <SelectItem value="apartment">{t("apartment")}</SelectItem>
+                              <SelectItem value="private_home">{t("privateHome")}</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 

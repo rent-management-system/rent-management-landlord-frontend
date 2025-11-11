@@ -8,6 +8,7 @@ export interface PropertySubmission {
   description: string;
   location: string;
   price: number;
+  house_type: string; // Added house_type
   amenities: string[];
   photos: File[];
   bedrooms?: number;
@@ -154,6 +155,7 @@ export const propertyService = {
     formData.append('description', propertyData.description);
     formData.append('location', propertyData.location);
     formData.append('price', propertyData.price.toString());
+    formData.append('house_type', propertyData.house_type);
 
     // Append amenities array
     propertyData.amenities.forEach(amenity => {
