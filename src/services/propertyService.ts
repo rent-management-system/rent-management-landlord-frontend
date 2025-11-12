@@ -36,7 +36,8 @@ export interface Property {
 export interface PropertyResponse {
   property_id: string;
   status: 'PENDING';
-  payment_url: string;
+  payment_id: string;
+  chapa_tx_ref: string;
 }
 
 export interface ApiError {

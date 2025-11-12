@@ -362,10 +362,13 @@ const Landlord = () => {
       // Submit to backend
       const result = await actions.submitProperty(submissionData);
       
-      if (result) {
+      if (result && result.chapa_tx_ref) {
         toast.success("Property submitted successfully! Redirecting to payment...");
         
-        // Reset form
+        // Redirect to Chapa payment URL
+        window.location.href = result.chapa_tx_ref;
+        
+        // Reset form (this will only happen if redirection doesn't occur immediately)
         setFormData({
           title: "",
           location: "",
@@ -386,6 +389,30 @@ const Landlord = () => {
           },
         });
         setUploadedImages([]);
+      } else if (result) {
+        // If result is true but chapa_tx_ref is missing, still reset form and refresh properties
+        toast.success("Property submitted successfully! Awaiting payment confirmation.");
+        setFormData({
+          title: "",
+          location: "",
+          price: "",
+          bedrooms: "",
+          bathrooms: "",
+          area: "",
+          description: "",
+          house_type: "",
+          amenities: {
+            WiFi: false,
+            Parking: false,
+            Security: false,
+            Gym: false,
+            Pool: false,
+            Garden: false,
+            Balcony: false,
+          },
+        });
+        setUploadedImages([]);
+        actions.loadUserProperties(); // Refresh properties if no redirection
       }
     } catch (error) {
       // Error is already handled and toasted by the useApi hook/service layer
