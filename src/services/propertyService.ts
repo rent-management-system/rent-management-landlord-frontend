@@ -94,14 +94,20 @@ const apiRequest = async <T>(
     
     if (!response.ok) {
       let errorMessage = `HTTP Error: ${response.status}`;
+      let errorDetails: any = null; // To store parsed error details
       try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorData.message || errorMessage;
-      } catch {
+        errorDetails = await response.json();
+        errorMessage = errorDetails.detail || errorDetails.message || errorMessage;
+      } catch (jsonError) {
         // If response is not JSON, use status text
         errorMessage = response.statusText || errorMessage;
       }
       
+      // Log full error details if available
+      if (errorDetails) {
+        console.error('❌ API Error Details:', errorDetails);
+      }
+
       // Specific error handling for CORS and auth
       if (response.status === 0) {
         errorMessage = 'CORS Error: Unable to connect to the server. Check if the backend allows requests from your domain.';
