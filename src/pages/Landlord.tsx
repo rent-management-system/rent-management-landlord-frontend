@@ -642,7 +642,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                             <SelectContent>
                               <SelectItem value="condominium">{t("condominium")}</SelectItem>
                               <SelectItem value="apartment">{t("apartment")}</SelectItem>
-                              <SelectItem value="private_home">{t("privateHome")}</SelectItem>
+                              <SelectItem value="private home">{t("privateHome")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
