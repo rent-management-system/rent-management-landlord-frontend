@@ -97,7 +97,19 @@ const apiRequest = async <T>(
       let errorDetails: any = null; // To store parsed error details
       try {
         errorDetails = await response.json();
-        errorMessage = errorDetails.detail || errorDetails.message || errorMessage;
+        if (response.status === 422 && Array.isArray(errorDetails.detail)) {
+          // Handle FastAPI validation errors
+          errorMessage = errorDetails.detail
+            .map((err: any) => {
+              const field = err.loc && err.loc.length > 1 ? err.loc[err.loc.length - 1] : 'Request';
+              // Capitalize first letter of field
+              const formattedField = field.charAt(0).toUpperCase() + field.slice(1);
+              return `${formattedField}: ${err.msg}`;
+            })
+            .join('; ');
+        } else {
+          errorMessage = errorDetails.detail || errorDetails.message || errorMessage;
+        }
       } catch (jsonError) {
         // If response is not JSON, use status text
         errorMessage = response.statusText || errorMessage;
