@@ -200,5 +200,57 @@
   "processing_status": "በሂደት ላይ",
   "approved_status": "ጸድቋል",
   "garden": "አትክልት",
-  "balcony": "በረንዳ"
+  "balcony": "በረንዳ",
+  "dashboard": "ዳሽቦርድ",
+  "dashboard_welcome": "የንብረቶችዎን ዝርዝር እና የቅርብ እንቅስቃሴ አጭር እይታ",
+  "new_listing": "አዲስ ዝርዝር",
+  "approved_listings": "የጸደቁ ዝርዝሮች",
+  "pending_listings": "በመጠባበቅ ላይ ያሉ ዝርዝሮች",
+  "recent_activity": "የቅርብ እንቅስቃሴ",
+  "quick_actions": "ፈጣን እርምጃዎች",
+  "create_listing": "ዝርዝር ይፍጠሩ",
+  "view_all_listings": "ሁሉንም ዝርዝሮች ይመልከቱ",
+  "since_last_month": "ከባለፈው ወር ጀምሮ",
+  "reviews": "ግምገማዎች",
+  "views": "እይታዎች",
+  "reserved": "የተቆጠበ",
+  "mark_reserved": "የተቆጠበ አድርግ",
+  "unreserve": "መጠበቁን ሰርዝ",
+  "reserve": "ቆጥብ",
+  "unreserve_title": "መጠበቁን ልሰርዝ?",
+  "reserve_title": "ቆጥቦ ልከተል?",
+  "unreserve_desc": "ይህ ንብረቱን ለሌሎች ተጠቃሚዎች እንደገና የሚታይ ያደርገዋል።",
+  "reserve_desc": "ይህ ንብረቱ በተጠቃሚ እንደተቆጠበ ይገልፃል እና ከአዲስ ማመልከቻ ይሰወራል።",
+  "payment_success": "ክፍያ ተሳክቷል",
+  "payment_pending": "ክፍያ በመጠባበቅ ላይ",
+  "payment_failed": "ክፍያ አልተሳካም",
+  "wifi": "ዊ-ፋይ",
+  "parking": "መኪና ማቆሚያ",
+  "security": "ደህንነት",
+  "gym": "ጂም",
+  "pool": "መዋኛ ገንዳ",
+  "photos": "ፎቶዎች",
+  "uploadPhotos": "ፎቶዎች አስገባ",
+  "area_placeholder": "ለምሳሌ፣ 120",
+  "descriptionPlaceholder": "ንብረትዎን በዝርዝር ይግለጹ...",
+  "description": "መግለጫ",
+  "images_selected": "{{count}} ፎቶዎች ተመርጠዋል",
+  "termsOfService": "የአገልግሎት ውሎች",
+  "reserved_views": "የተቆጠቡ እይታዎች",
+  "avg_reserved": "አማካይ/የተቆጠቡ"
+  ,"property_portfolio": "የንብረት ፖርትፎሊዮ"
+  ,"myProperties": "የኔ ንብረቶች"
+  ,"property_portfolio_subtitle": "የኪራይ ንብረቶችዎን በአንድ ቦታ ያቆጣጠሩና ይከታተሉ"
+  ,"active_label": "ንቁ"
+  ,"pending_label": "በመጠባበቅ ላይ"
+  ,"reserved_label": "የተቆጠበ"
+  ,"no_properties_found": "ምንም ንብረት አልተገኘም"
+  ,"no_properties_start_msg": "የንብረት ፖርትፎሊዮዎን በመጀመር ዝርዝር ይፍጠሩ"
+  ,"load_more_properties": "ተጨማሪ ንብረቶች ይጫኑ"
+  ,"quick_view": "በፍጥነት እይታ"
+  ,"monthly_rental_price": "ወርሃዊ የኪራይ ዋጋ"
+  ,"loading_properties": "ንብረቶችዎን በመጫን ላይ..."
+  ,"contactUs": "አግኙን"
+  ,"faq": "ተደጋጋሚ ጥያቄዎች"
+  ,"allRightsReserved": "ሁሉም መብቶች የተጠበቁ ናቸው"
 }

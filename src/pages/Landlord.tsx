@@ -73,317 +73,7 @@ const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: num
 
 
 
-// Enhanced Property Card Component
-const EnhancedPropertyCard = ({ 
-  property, 
-  onEdit, 
-  onViewDetails,
-  onApprove,
-  onDelete,
-  onToggleReserve,
-}: { 
-  property: Property; 
-  onEdit: () => void; 
-  onViewDetails: () => void;
-  onApprove: () => void;
-  onDelete: () => void;
-  onToggleReserve: () => void;
-}) => {
-  const { t } = useTranslation();
-  
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      APPROVED: { 
-        label: t("approved_status"), 
-        class: "bg-green-500/20 text-green-700 border-green-300 dark:text-green-300",
-        icon: CheckCircle2
-      },
-      PENDING: { 
-        label: t("pending_status"), 
-        class: "bg-yellow-500/20 text-yellow-700 border-yellow-300 dark:text-yellow-300",
-        icon: Calendar
-      },
-      REJECTED: { 
-        label: "Rejected", 
-        class: "bg-red-500/20 text-red-700 border-red-300 dark:text-red-300",
-        icon: Trash2
-      }
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.PENDING;
-    const IconComponent = config.icon;
-
-    return (
-      <Badge variant="outline" className={`${config.class} font-medium px-3 py-1`}>
-        <IconComponent className="h-3 w-3 mr-1" />
-        {config.label}
-      </Badge>
-    );
-  };
-
-  const getPaymentBadge = (payment?: string) => {
-    if (!payment) return null;
-    const map: Record<string, { label: string; className: string }> = {
-      SUCCESS: { label: t('payment_success') || 'Paid', className: 'bg-emerald-500/20 text-emerald-700 border-emerald-300 dark:text-emerald-300' },
-      PENDING: { label: t('payment_pending') || 'Payment Pending', className: 'bg-yellow-500/20 text-yellow-700 border-yellow-300 dark:text-yellow-300' },
-      FAILED: { label: t('payment_failed') || 'Payment Failed', className: 'bg-red-500/20 text-red-700 border-red-300 dark:text-red-300' },
-    };
-    const item = map[payment] ?? map.PENDING;
-    return (
-      <Badge variant="outline" className={`${item.className} font-medium px-3 py-1`}>
-        {item.label}
-      </Badge>
-    );
-  };
-
-  const amenitiesIcons = {
-    WiFi: Wifi,
-    Parking: Car,
-    Security: Shield,
-    Gym: Dumbbell,
-    Pool: Trees,
-    Garden: Trees,
-    Balcony: Building,
-  };
-
-  const isApproved = property.status === 'APPROVED';
-  const isPending = property.status === 'PENDING';
-  const isRejected = property.status === 'REJECTED';
-
-  return (
-    <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
-      {/* Property Image Section */}
-      <div className="relative h-48 bg-gradient-to-br from-primary/10 to-primary/5">
-        {property.photos && property.photos.length > 0 ? (
-          <img 
-            src={property.photos[0]} 
-            alt={property.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Building2 className="h-16 w-16 text-primary/40" />
-          </div>
-        )}
-        
-        {/* Status and Payment Badges */}
-        <div className="absolute top-3 left-3 flex gap-2 items-center">
-          {getStatusBadge(property.status)}
-          {getPaymentBadge(property.payment_status)}
-          {property.reserved && (
-            <Badge variant="outline" className="bg-purple-500/20 text-purple-700 border-purple-300 dark:text-purple-300">
-              {t('reserved') || 'Reserved'}
-            </Badge>
-          )}
-        </div>
-
-        {/* View Count */}
-        <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
-          <Eye className="h-3 w-3" />
-          {property.views || 0}
-        </div>
-
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
-      </div>
-
-      <CardContent className="p-6">
-        {/* Property Title and Location */}
-        <div className="mb-4">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-1 group-hover:text-primary transition-colors">
-            {property.title}
-          </h3>
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <MapPin className="h-4 w-4" />
-            <span className="line-clamp-1">{property.location}</span>
-          </div>
-          {property.house_type && (
-            <div className="mt-2">
-              <Badge variant="secondary" className="text-xs">
-                {t('houseType')}: {property.house_type}
-              </Badge>
-            </div>
-          )}
-        </div>
-
-        {/* Price */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2 text-2xl font-bold text-primary">
-            <DollarSign className="h-5 w-5" />
-            {property.price.toLocaleString()} ETB
-          </div>
-          <p className="text-xs text-muted-foreground">ዋጋ</p>
-        </div>
-
-        {/* Property Details */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="text-center p-3 rounded-lg bg-muted/30">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Bed className="h-4 w-4 text-primary" />
-              <span className="font-semibold">{property.bedrooms || 0}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">መኝታ</p>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-muted/30">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Bath className="h-4 w-4 text-primary" />
-              <span className="font-semibold">{property.bathrooms || 0}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">መታጠቢያ</p>
-          </div>
-        </div>
-
-        {/* Rating and Reviews */}
-        {property.rating && (
-          <div className="flex items-center justify-between mb-4 p-3 bg-muted/20 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-semibold">{property.rating}</span>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                ({property.reviewCount || 0} {t("reviews")})
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {property.views || 0} {t("views")}
-            </div>
-          </div>
-        )}
-
-        {/* Amenities */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            {property.amenities.map((amenity: string) => {
-              const IconComponent = amenitiesIcons[amenity as keyof typeof amenitiesIcons];
-              return (
-                <Badge 
-                  key={amenity} 
-                  variant="secondary" 
-                  className="flex items-center gap-1 px-2 py-1 text-xs"
-                >
-                  {IconComponent && <IconComponent className="h-3 w-3" />}
-                  {t(amenity.toLowerCase())}
-                </Badge>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2">
-          {/* If not approved (pending or rejected): show Approve, Edit, Delete, Details */}
-          {(!isApproved) && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  size="sm" 
-                  className="flex-1 gap-2"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  {t('approve') || 'Approve'}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{t('confirm_approve_title') || 'Approve this property?'}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t('confirm_approve_desc') || 'This will mark the property as approved and make it visible to renters.'}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t('cancel') || 'Cancel'}</AlertDialogCancel>
-                  <AlertDialogAction onClick={onApprove}>{t('approve') || 'Approve'}</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-
-          {/* Edit */}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1 gap-2"
-            onClick={onEdit}
-          >
-            <Edit className="h-4 w-4" />
-            {t("edit")}
-          </Button>
-
-          {/* Delete */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                className="flex-1 gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                {t('delete') || 'Delete'}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t('confirm_delete_title') || 'Delete this property?'}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t('confirm_delete_desc') || 'This action cannot be undone and will permanently delete the property.'}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{t('cancel') || 'Cancel'}</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete}>{t('delete') || 'Delete'}</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          {/* Details */}
-          <Button 
-            size="sm" 
-            className="flex-1 gap-2"
-            onClick={onViewDetails}
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t("view_details")}
-          </Button>
-
-          {/* If approved: show Reserved toggle */}
-          {isApproved && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant={property.reserved ? 'outline' : 'default'}
-                  size="sm"
-                  className="flex-1 gap-2"
-                >
-                  <Star className="h-4 w-4" />
-                  {property.reserved ? (t('reserved') || 'Reserved') : (t('mark_reserved') || 'Mark Reserved')}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {property.reserved ? (t('unreserve_title') || 'Remove reservation?') : (t('reserve_title') || 'Mark as reserved?')}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {property.reserved 
-                      ? (t('unreserve_desc') || 'This will make the property available again for other users to reserve.')
-                      : (t('reserve_desc') || 'This will flag the property as reserved by a user and hide it from new applicants.')}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t('cancel') || 'Cancel'}</AlertDialogCancel>
-                  <AlertDialogAction onClick={onToggleReserve}>
-                    {property.reserved ? (t('unreserve') || 'Unreserve') : (t('reserve') || 'Reserve')}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+// My Properties card and management moved to Dashboard page
 
 const Landlord = () => {
   const { t } = useTranslation();
@@ -419,114 +109,13 @@ const Landlord = () => {
 
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  // My Properties filters moved to Dashboard
 
-  // Approve & Pay dialog state
-  const [approveOpen, setApproveOpen] = useState(false);
-  const [approveLoading, setApproveLoading] = useState(false);
-  const [approveTarget, setApproveTarget] = useState<Property | null>(null);
+  // Approve & Pay moved to Dashboard
 
-  const openApproveDialog = (p: Property) => {
-    setApproveTarget(p);
-    setApproveOpen(true);
-  };
+  // Edit property moved to Dashboard
 
-  const handleApproveAndPay = async () => {
-    if (!approveTarget) return;
-    setApproveLoading(true);
-    const res = await actions.approveAndPay(approveTarget.id);
-    setApproveLoading(false);
-    if (res && res.checkout_url) {
-      window.location.href = res.checkout_url;
-      setApproveOpen(false);
-      setApproveTarget(null);
-    }
-  };
-
-  // Edit dialog state
-  const [editOpen, setEditOpen] = useState(false);
-  const [editSubmitting, setEditSubmitting] = useState(false);
-  const [editTarget, setEditTarget] = useState<Property | null>(null);
-  const [editData, setEditData] = useState({
-    title: "",
-    description: "",
-    price: "",
-    amenities: {
-      WiFi: false,
-      Parking: false,
-      Security: false,
-      Gym: false,
-      Pool: false,
-      Garden: false,
-      Balcony: false,
-    },
-  });
-
-  const openEdit = (p: Property) => {
-    setEditTarget(p);
-    setEditData({
-      title: p.title || "",
-      description: p.description || "",
-      price: (p.price ?? 0).toString(),
-      amenities: {
-        WiFi: (p.amenities || []).includes("WiFi"),
-        Parking: (p.amenities || []).includes("Parking"),
-        Security: (p.amenities || []).includes("Security"),
-        Gym: (p.amenities || []).includes("Gym"),
-        Pool: (p.amenities || []).includes("Pool"),
-        Garden: (p.amenities || []).includes("Garden"),
-        Balcony: (p.amenities || []).includes("Balcony"),
-      },
-    });
-    setEditOpen(true);
-  };
-
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setEditData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleEditAmenityToggle = (name: keyof typeof editData.amenities) => {
-    setEditData(prev => ({
-      ...prev,
-      amenities: { ...prev.amenities, [name]: !prev.amenities[name] },
-    }));
-  };
-
-  const submitEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTarget) return;
-    // Basic validation
-    if (!editData.title.trim()) { toast.error("Title is required"); return; }
-    if (!editData.description.trim()) { toast.error("Description is required"); return; }
-    const priceNum = parseFloat(editData.price);
-    if (Number.isNaN(priceNum) || priceNum < 0) { toast.error("Enter a valid price"); return; }
-
-    const amenities = Object.entries(editData.amenities)
-      .filter(([_, v]) => v)
-      .map(([k]) => k);
-
-    setEditSubmitting(true);
-    const res = await actions.updateProperty(editTarget.id, {
-      title: editData.title,
-      description: editData.description,
-      price: priceNum,
-      amenities,
-    });
-    setEditSubmitting(false);
-    if (res) {
-      setEditOpen(false);
-      setEditTarget(null);
-    }
-  };
-
-  // Filter user properties based on search and status
-  const filteredProperties = userProperties.filter(property => {
-    const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         property.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "ALL" || property.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Filtering moved to Dashboard
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -825,7 +414,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                     {t("pay_per_post_fee")}
                   </Badge>
                   <CardDescription className="text-base">
-                    ንብረትዎን ለመዘርዘር ከታች ያሉትን ዝርዝሮች ይሙሉ
+                    {t("fill_details_pay_per_post")}
                   </CardDescription>
                 </CardHeader>
                 
@@ -950,7 +539,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                         <div className="space-y-2">
                           <Label htmlFor="area" className="text-sm font-medium flex items-center gap-2">
                             <Square className="h-4 w-4" />
-                            Area (m²)
+                            {t("area_label")} (m²)
                           </Label>
                           <Input
                             id="area"
@@ -958,7 +547,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                             type="number"
                             value={formData.area}
                             onChange={handleInputChange}
-                            placeholder="ለምሳሌ፣ 120"
+                            placeholder={t("area_placeholder") || "120"}
                             className="h-12"
                           />
                         </div>
@@ -1041,7 +630,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                       {uploadedImages.length > 0 && (
                         <div className="mt-4">
                           <p className="text-sm text-muted-foreground mb-3">
-                            {uploadedImages.length} images selected
+                            {t("images_selected", { count: uploadedImages.length })}
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                             {uploadedImages.map((file, index) => (
@@ -1076,7 +665,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                         {isSubmitting ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Processing...
+                            {t("processing")}
                           </>
                         ) : (
                           <>
@@ -1096,200 +685,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
           </div>
         </section>
 
-        {/* My Properties Section with real data */}
-        <section id="my-properties" className="py-16 bg-gradient-to-br from-background to-muted/20">
-          <div className="container mx-auto px-4">
-            {/* Header with real stats */}
-            <div className="mb-8">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-3xl font-bold mb-2">{t("myProperties")}</h2>
-                  <div className="flex items-center gap-4 text-muted-foreground">
-                    <span className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
-                      {filteredProperties.length} {t("total_listings")}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      {userProperties.filter(p => p.status === "APPROVED").length} Approved
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-yellow-500" />
-                      {userProperties.filter(p => p.status === "PENDING").length} Pending
-                    </span>
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={() => document.getElementById('create-listing')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add New Property
-                </Button>
-              </div>
-
-              {/* Search and Filter Bar */}
-              <Card className="p-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  {/* Search Input */}
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search properties by title or location..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  
-                  {/* Status Filter */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant={statusFilter === "ALL" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setStatusFilter("ALL")}
-                    >
-                      All
-                    </Button>
-                    <Button
-                      variant={statusFilter === "APPROVED" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setStatusFilter("APPROVED")}
-                      className="gap-2"
-                    >
-                      <CheckCircle2 className="h-3 w-3" />
-                      Approved
-                    </Button>
-                    <Button
-                      variant={statusFilter === "PENDING" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setStatusFilter("PENDING")}
-                      className="gap-2"
-                    >
-                      <Calendar className="h-3 w-3" />
-                      Pending
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Properties Grid with real data */}
-            {loading ? (
-              <div className="text-center py-16">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p>Loading properties...</p>
-              </div>
-            ) : filteredProperties.length === 0 ? (
-              <Card className="text-center py-16">
-                <CardContent>
-                  <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-xl font-semibold mb-2">No properties found</h3>
-                  <p className="text-muted-foreground mb-6">
-                    {searchTerm || statusFilter !== "ALL" 
-                      ? "Try adjusting your search or filter criteria"
-                      : "You haven't listed any properties yet"
-                    }
-                  </p>
-                  <Button 
-                    onClick={() => document.getElementById('create-listing')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    List Your First Property
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredProperties.map((property) => (
-                  <EnhancedPropertyCard
-                    key={property.id}
-                    property={property}
-                    onEdit={() => openEdit(property)}
-                    onViewDetails={() => navigate(`/properties/${property.id}`)}
-                    onApprove={() => openApproveDialog(property)}
-                    onDelete={() => actions.deleteProperty(property.id)}
-                    onToggleReserve={() => actions.reserveProperty(property.id, !(property.reserved ?? false))}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-        {/* Edit Property Dialog */}
-        <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogContent className="max-w-xl">
-            <DialogHeader>
-              <DialogTitle>{t("edit_property") || "Edit Property"}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={submitEdit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-title">{t("propertyTitle")}</Label>
-                <Input id="edit-title" name="title" value={editData.title} onChange={handleEditChange} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-price">{t("price")}</Label>
-                <Input id="edit-price" name="price" type="number" value={editData.price} onChange={handleEditChange} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-description">{t("description")}</Label>
-                <Textarea id="edit-description" name="description" rows={5} value={editData.description} onChange={handleEditChange} required />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("amenities")}</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {Object.keys(editData.amenities).map((amenity) => {
-                    const checked = editData.amenities[amenity as keyof typeof editData.amenities];
-                    const IconComponent = amenitiesIcons[amenity as keyof typeof amenitiesIcons];
-                    return (
-                      <div key={amenity} className="flex items-center space-x-2">
-                        <Checkbox id={`edit-${amenity}`} checked={checked} onCheckedChange={() => handleEditAmenityToggle(amenity as any)} />
-                        <Label htmlFor={`edit-${amenity}`} className="flex items-center gap-2">
-                          {IconComponent && <IconComponent className="h-4 w-4" />}
-                          {t(amenity.toLowerCase())}
-                        </Label>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>{t("cancel") || "Cancel"}</Button>
-                <Button type="submit" disabled={editSubmitting}>
-                  {editSubmitting ? t("saving") || "Saving..." : t("save_changes") || "Save Changes"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-        {/* Approve & Pay Dialog */}
-        <Dialog open={approveOpen} onOpenChange={setApproveOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Approve & Pay</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                To approve this property, you need to pay 500 BIRR.
-              </p>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setApproveOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleApproveAndPay} disabled={approveLoading} className="gap-2">
-                {approveLoading && (
-                  <span className="animate-spin h-4 w-4 rounded-full border-2 border-b-transparent"></span>
-                )}
-                Pay
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* My Properties moved to Dashboard */}
       </main>
       <Footer />
     </div>

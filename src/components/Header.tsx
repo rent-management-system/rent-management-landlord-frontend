@@ -1,24 +1,46 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Menu, User, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, User, X, LogOut, LayoutDashboard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
 
 const Header: React.FC = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   const toggleNav = () => setIsNavOpen((s) => !s);
   const closeNav = () => setIsNavOpen(false);
 
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
+  };
+
+  const handleLogout = () => {
+    try {
+      // Clear authentication tokens from storage
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("access_token");
+      sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("access_token");
+      console.log("🔒 Cleared auth tokens from storage");
+    } catch (e) {
+      console.warn("Failed to clear tokens during logout", e);
+    }
+
+    // Redirect to login page
+    window.location.href = "https://rental-user-management-frontend-sigma.vercel.app/";
+  };
+
+  const handleDashboard = () => {
+    navigate("/dashboard");
   };
 
   useEffect(() => {
@@ -31,11 +53,6 @@ const Header: React.FC = () => {
       document.body.style.overflow = "";
     };
   }, [isNavOpen]);
-
-  const handleExternalLink = (url: string) => {
-    closeNav();
-    window.open(url, "_blank");
-  };
 
   return (
     <div className="flex items-center justify-between pt-4 px-3 relative z-20">
@@ -50,38 +67,38 @@ const Header: React.FC = () => {
       <nav className="items-center space-x-12 list-none hidden md:flex">
         <a
           href="https://rent-management-system-tau.vercel.app/"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
         >
           {t("home")}
         </a>
         <a
           href="https://rent-management-system-tau.vercel.app/#about"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
         >
           {t("about")}
         </a>
         <a
           href="https://rent-management-system-tau.vercel.app/#product"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
         >
           {t("properties")}
         </a>
         <a
           href="https://rent-management-system-tau.vercel.app/#testimonials"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
         >
           {t("testimonials")}
         </a>
         <a
           href="https://rent-management-system-tau.vercel.app/contact"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-gray-700 cursor-pointer"
+          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
         >
           {t("contact")}
         </a>
       </nav>
 
       <div className="flex items-center">
-        {/* Desktop right controls - FIXED ACCOUNT DROPDOWN */}
+        {/* Desktop right controls */}
         <div className="nav-child3 -mr-4 hidden md:flex items-center space-x-3">
           <select
             className="language-selector-desktop bg-transparent border p-1 rounded"
@@ -96,38 +113,70 @@ const Header: React.FC = () => {
             <option value="om">{t("afan_oromo_option")}</option>
           </select>
 
-          {/* WORKING Account Dropdown */}
+          {/* ENHANCED Account Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex gap-1 items-center cursor-pointer account-container">
+              <div className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-gray-100 transition-all duration-300">
+                {/* Beautiful User Avatar */}
+                <div className="relative">
+                  <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                  {/* Online Status Indicator */}
+                  <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                
+                {/* Chevron Icon */}
                 <svg 
-                  width="28" 
-                  height="28" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="1.5"
-                  className="text-[#222a2f] opacity-90"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                <svg 
-                  width="16" 
-                  height="16" 
+                  width="14" 
+                  height="14" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   stroke="currentColor" 
                   strokeWidth="2"
-                  className="text-[#222a2f]"
+                  className="text-primary transition-transform duration-300 group-hover:rotate-180"
+                  style={{ color: 'hsl(var(--primary))' }}
                 >
                   <path d="m6 9 6 6 6-6" />
                 </svg>
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>{t("login")}</DropdownMenuItem>
-              <DropdownMenuItem>{t("signUp")}</DropdownMenuItem>
+            
+            <DropdownMenuContent 
+              align="end" 
+              className="w-56 p-2 rounded-xl shadow-xl border border-gray-200"
+            >
+              {/* Dashboard Option */}
+              <DropdownMenuItem 
+                className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-primary/10 transition-colors"
+                onClick={handleDashboard}
+              >
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <LayoutDashboard className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-900">Dashboard</span>
+                  <span className="text-xs text-gray-500">Manage your account</span>
+                </div>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className="my-1" />
+
+              {/* Logout Button */}
+              <DropdownMenuItem 
+                className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-destructive/10 transition-colors group"
+                onClick={handleLogout}
+              >
+                <div className="w-8 h-8 bg-destructive/10 rounded-lg flex items-center justify-center group-hover:bg-destructive/20 transition-colors">
+                  <LogOut className="h-4 w-4 text-destructive" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-900 group-hover:text-destructive transition-colors">
+                    Logout
+                  </span>
+                  <span className="text-xs text-gray-500">Sign out of your account</span>
+                </div>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -155,7 +204,8 @@ const Header: React.FC = () => {
               borderRadius: "5px",
               transition: "all 0.2s ease-in-out",
               background: "rgb(255 255 255 / 43%)",
-              boxShadow: isNavOpen ? "0px 0px 30px rgba(0, 0, 0, 0.1)" : "none"
+              boxShadow: isNavOpen ? "0px 0px 30px rgba(0, 0, 0, 0.1)" : "none",
+              color: "hsl(var(--primary))"
             }}
           >
             <div 
@@ -163,7 +213,7 @@ const Header: React.FC = () => {
               style={{
                 width: isNavOpen ? "37px" : "32px",
                 height: "3px",
-                backgroundColor: "black",
+                backgroundColor: "currentColor",
                 transition: "all 400ms ease",
                 transform: isNavOpen ? "rotate(40deg)" : "none",
                 position: "relative",
@@ -175,7 +225,7 @@ const Header: React.FC = () => {
               style={{
                 width: "32px",
                 height: "3px",
-                backgroundColor: "black",
+                backgroundColor: "currentColor",
                 transition: "all 400ms ease",
                 opacity: isNavOpen ? "0" : "1"
               }}
@@ -185,7 +235,7 @@ const Header: React.FC = () => {
               style={{
                 width: isNavOpen ? "37px" : "32px",
                 height: "3px",
-                backgroundColor: "black",
+                backgroundColor: "currentColor",
                 transition: "all 400ms ease",
                 transform: isNavOpen ? "rotate(-40deg)" : "none",
                 position: "relative",
