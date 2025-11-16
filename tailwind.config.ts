@@ -67,6 +67,10 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      transitionTimingFunction: {
+        // Custom easing to avoid ambiguous arbitrary class warning
+        'spring-bounce': 'cubic-bezier(0.62, 0.04, 0.3, 1.56)'
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

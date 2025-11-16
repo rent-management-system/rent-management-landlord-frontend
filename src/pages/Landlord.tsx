@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,18 @@ import {
   Square, Wifi, Car, Shield, Dumbbell, Trees, Building, Eye, Star, 
   Calendar, Filter, Search, Plus, MoreVertical, Edit, Trash2, ExternalLink
 } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next";
 import "@/style.scss";
 import { useProperties } from "@/hooks/useProperties";
@@ -61,7 +74,21 @@ const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: num
 
 
 // Enhanced Property Card Component
-const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: Property; onEdit: () => void; onViewDetails: () => void }) => {
+const EnhancedPropertyCard = ({ 
+  property, 
+  onEdit, 
+  onViewDetails,
+  onApprove,
+  onDelete,
+  onToggleReserve,
+}: { 
+  property: Property; 
+  onEdit: () => void; 
+  onViewDetails: () => void;
+  onApprove: () => void;
+  onDelete: () => void;
+  onToggleReserve: () => void;
+}) => {
   const { t } = useTranslation();
   
   const getStatusBadge = (status: string) => {
@@ -94,6 +121,21 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: P
     );
   };
 
+  const getPaymentBadge = (payment?: string) => {
+    if (!payment) return null;
+    const map: Record<string, { label: string; className: string }> = {
+      SUCCESS: { label: t('payment_success') || 'Paid', className: 'bg-emerald-500/20 text-emerald-700 border-emerald-300 dark:text-emerald-300' },
+      PENDING: { label: t('payment_pending') || 'Payment Pending', className: 'bg-yellow-500/20 text-yellow-700 border-yellow-300 dark:text-yellow-300' },
+      FAILED: { label: t('payment_failed') || 'Payment Failed', className: 'bg-red-500/20 text-red-700 border-red-300 dark:text-red-300' },
+    };
+    const item = map[payment] ?? map.PENDING;
+    return (
+      <Badge variant="outline" className={`${item.className} font-medium px-3 py-1`}>
+        {item.label}
+      </Badge>
+    );
+  };
+
   const amenitiesIcons = {
     WiFi: Wifi,
     Parking: Car,
@@ -103,6 +145,10 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: P
     Garden: Trees,
     Balcony: Building,
   };
+
+  const isApproved = property.status === 'APPROVED';
+  const isPending = property.status === 'PENDING';
+  const isRejected = property.status === 'REJECTED';
 
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
@@ -120,9 +166,15 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: P
           </div>
         )}
         
-        {/* Status Badge */}
-        <div className="absolute top-3 left-3">
+        {/* Status and Payment Badges */}
+        <div className="absolute top-3 left-3 flex gap-2 items-center">
           {getStatusBadge(property.status)}
+          {getPaymentBadge(property.payment_status)}
+          {property.reserved && (
+            <Badge variant="outline" className="bg-purple-500/20 text-purple-700 border-purple-300 dark:text-purple-300">
+              {t('reserved') || 'Reserved'}
+            </Badge>
+          )}
         </div>
 
         {/* View Count */}
@@ -145,6 +197,13 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: P
             <MapPin className="h-4 w-4" />
             <span className="line-clamp-1">{property.location}</span>
           </div>
+          {property.house_type && (
+            <div className="mt-2">
+              <Badge variant="secondary" className="text-xs">
+                {t('houseType')}: {property.house_type}
+              </Badge>
+            </div>
+          )}
         </div>
 
         {/* Price */}
@@ -212,7 +271,35 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: P
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* If not approved (pending or rejected): show Approve, Edit, Delete, Details */}
+          {(!isApproved) && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  size="sm" 
+                  className="flex-1 gap-2"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {t('approve') || 'Approve'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('confirm_approve_title') || 'Approve this property?'}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('confirm_approve_desc') || 'This will mark the property as approved and make it visible to renters.'}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('cancel') || 'Cancel'}</AlertDialogCancel>
+                  <AlertDialogAction onClick={onApprove}>{t('approve') || 'Approve'}</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
+          {/* Edit */}
           <Button 
             variant="outline" 
             size="sm" 
@@ -222,6 +309,34 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: P
             <Edit className="h-4 w-4" />
             {t("edit")}
           </Button>
+
+          {/* Delete */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="flex-1 gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                {t('delete') || 'Delete'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('confirm_delete_title') || 'Delete this property?'}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('confirm_delete_desc') || 'This action cannot be undone and will permanently delete the property.'}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('cancel') || 'Cancel'}</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete}>{t('delete') || 'Delete'}</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Details */}
           <Button 
             size="sm" 
             className="flex-1 gap-2"
@@ -230,6 +345,40 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: P
             <ExternalLink className="h-4 w-4" />
             {t("view_details")}
           </Button>
+
+          {/* If approved: show Reserved toggle */}
+          {isApproved && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant={property.reserved ? 'outline' : 'default'}
+                  size="sm"
+                  className="flex-1 gap-2"
+                >
+                  <Star className="h-4 w-4" />
+                  {property.reserved ? (t('reserved') || 'Reserved') : (t('mark_reserved') || 'Mark Reserved')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {property.reserved ? (t('unreserve_title') || 'Remove reservation?') : (t('reserve_title') || 'Mark as reserved?')}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {property.reserved 
+                      ? (t('unreserve_desc') || 'This will make the property available again for other users to reserve.')
+                      : (t('reserve_desc') || 'This will flag the property as reserved by a user and hide it from new applicants.')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('cancel') || 'Cancel'}</AlertDialogCancel>
+                  <AlertDialogAction onClick={onToggleReserve}>
+                    {property.reserved ? (t('unreserve') || 'Unreserve') : (t('reserve') || 'Reserve')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -238,6 +387,7 @@ const EnhancedPropertyCard = ({ property, onEdit, onViewDetails }: { property: P
 
 const Landlord = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   // Use the properties hook for real data
   const { 
@@ -271,6 +421,104 @@ const Landlord = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+
+  // Approve & Pay dialog state
+  const [approveOpen, setApproveOpen] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [approveTarget, setApproveTarget] = useState<Property | null>(null);
+
+  const openApproveDialog = (p: Property) => {
+    setApproveTarget(p);
+    setApproveOpen(true);
+  };
+
+  const handleApproveAndPay = async () => {
+    if (!approveTarget) return;
+    setApproveLoading(true);
+    const res = await actions.approveAndPay(approveTarget.id);
+    setApproveLoading(false);
+    if (res && res.checkout_url) {
+      window.location.href = res.checkout_url;
+      setApproveOpen(false);
+      setApproveTarget(null);
+    }
+  };
+
+  // Edit dialog state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editTarget, setEditTarget] = useState<Property | null>(null);
+  const [editData, setEditData] = useState({
+    title: "",
+    description: "",
+    price: "",
+    amenities: {
+      WiFi: false,
+      Parking: false,
+      Security: false,
+      Gym: false,
+      Pool: false,
+      Garden: false,
+      Balcony: false,
+    },
+  });
+
+  const openEdit = (p: Property) => {
+    setEditTarget(p);
+    setEditData({
+      title: p.title || "",
+      description: p.description || "",
+      price: (p.price ?? 0).toString(),
+      amenities: {
+        WiFi: (p.amenities || []).includes("WiFi"),
+        Parking: (p.amenities || []).includes("Parking"),
+        Security: (p.amenities || []).includes("Security"),
+        Gym: (p.amenities || []).includes("Gym"),
+        Pool: (p.amenities || []).includes("Pool"),
+        Garden: (p.amenities || []).includes("Garden"),
+        Balcony: (p.amenities || []).includes("Balcony"),
+      },
+    });
+    setEditOpen(true);
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setEditData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleEditAmenityToggle = (name: keyof typeof editData.amenities) => {
+    setEditData(prev => ({
+      ...prev,
+      amenities: { ...prev.amenities, [name]: !prev.amenities[name] },
+    }));
+  };
+
+  const submitEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTarget) return;
+    // Basic validation
+    if (!editData.title.trim()) { toast.error("Title is required"); return; }
+    if (!editData.description.trim()) { toast.error("Description is required"); return; }
+    const priceNum = parseFloat(editData.price);
+    if (Number.isNaN(priceNum) || priceNum < 0) { toast.error("Enter a valid price"); return; }
+
+    const amenities = Object.entries(editData.amenities)
+      .filter(([_, v]) => v)
+      .map(([k]) => k);
+
+    setEditSubmitting(true);
+    const res = await actions.updateProperty(editTarget.id, {
+      title: editData.title,
+      description: editData.description,
+      price: priceNum,
+      amenities,
+    });
+    setEditSubmitting(false);
+    if (res) {
+      setEditOpen(false);
+      setEditTarget(null);
+    }
+  };
 
   // Filter user properties based on search and status
   const filteredProperties = userProperties.filter(property => {
@@ -487,9 +735,8 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
       <main className="flex-1">
-        <FrontPage />
+          <FrontPage />
         
         {/* Updated How It Works Section */}
         <section className="py-16 bg-muted/30">
@@ -962,16 +1209,88 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
                   <EnhancedPropertyCard
                     key={property.id}
                     property={property}
-                    onEdit={() => toast.info("Edit functionality coming soon")}
-                    onViewDetails={() => toast.info("View details coming soon")}
+                    onEdit={() => openEdit(property)}
+                    onViewDetails={() => navigate(`/properties/${property.id}`)}
+                    onApprove={() => openApproveDialog(property)}
+                    onDelete={() => actions.deleteProperty(property.id)}
+                    onToggleReserve={() => actions.reserveProperty(property.id, !(property.reserved ?? false))}
                   />
                 ))}
               </div>
             )}
           </div>
         </section>
+        {/* Edit Property Dialog */}
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>{t("edit_property") || "Edit Property"}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={submitEdit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">{t("propertyTitle")}</Label>
+                <Input id="edit-title" name="title" value={editData.title} onChange={handleEditChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-price">{t("price")}</Label>
+                <Input id="edit-price" name="price" type="number" value={editData.price} onChange={handleEditChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">{t("description")}</Label>
+                <Textarea id="edit-description" name="description" rows={5} value={editData.description} onChange={handleEditChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("amenities")}</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {Object.keys(editData.amenities).map((amenity) => {
+                    const checked = editData.amenities[amenity as keyof typeof editData.amenities];
+                    const IconComponent = amenitiesIcons[amenity as keyof typeof amenitiesIcons];
+                    return (
+                      <div key={amenity} className="flex items-center space-x-2">
+                        <Checkbox id={`edit-${amenity}`} checked={checked} onCheckedChange={() => handleEditAmenityToggle(amenity as any)} />
+                        <Label htmlFor={`edit-${amenity}`} className="flex items-center gap-2">
+                          {IconComponent && <IconComponent className="h-4 w-4" />}
+                          {t(amenity.toLowerCase())}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>{t("cancel") || "Cancel"}</Button>
+                <Button type="submit" disabled={editSubmitting}>
+                  {editSubmitting ? t("saving") || "Saving..." : t("save_changes") || "Save Changes"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+        {/* Approve & Pay Dialog */}
+        <Dialog open={approveOpen} onOpenChange={setApproveOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Approve & Pay</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                To approve this property, you need to pay 500 BIRR.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setApproveOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleApproveAndPay} disabled={approveLoading} className="gap-2">
+                {approveLoading && (
+                  <span className="animate-spin h-4 w-4 rounded-full border-2 border-b-transparent"></span>
+                )}
+                Pay
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
-
       <Footer />
     </div>
   );

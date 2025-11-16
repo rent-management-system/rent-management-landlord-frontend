@@ -25,12 +25,18 @@ export interface Property {
   amenities: string[];
   photos: string[];
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  house_type?: string;
+  payment_status?: 'PENDING' | 'SUCCESS' | 'FAILED' | string;
+  approval_timestamp?: string | null;
+  lat?: number;
+  lon?: number;
   bedrooms?: number;
   bathrooms?: number;
   area?: number;
   views?: number;
   rating?: number;
   reviewCount?: number;
+  reserved?: boolean;
 }
 
 export interface PropertyResponse {
@@ -45,8 +51,25 @@ export interface ApiError {
   status: number;
 }
 
-// Base API configuration
-const BASE_URL = 'https://property-listing-service.onrender.com/api/v1/properties';
+// Payload for updating a property
+export interface UpdatePropertyPayload {
+  title?: string;
+  description?: string;
+  price?: number;
+  amenities?: string[];
+}
+
+// Payment initiation response for approve-and-pay
+export interface ApproveAndPayResponse {
+  property_id: string;
+  status: string;
+  payment_id: string;
+  chapa_tx_ref: string;
+  checkout_url: string;
+}
+
+// Base API configuration (env-configurable)
+const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'https://property-listing-service.onrender.com/api/v1/properties';
 
 // Auth token management
 const getAuthToken = (): string | null => {
@@ -73,6 +96,7 @@ const apiRequest = async <T>(
       ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     },
+
     ...options,
   };
 
@@ -242,20 +266,71 @@ export const propertyService = {
 
   // Get specific property by ID
   async getPropertyById(id: string): Promise<Property> {
-    return apiRequest<Property>(`/${id}`, {
+    const item = await apiRequest<any>(`/${id}`, {
       method: 'GET',
       // No headers for GET to avoid preflight
     });
+
+    // Normalize server payload
+    const normalized: Property = {
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      location: item.location,
+      price: typeof item.price === 'string' ? parseFloat(item.price) : Number(item.price ?? 0),
+      amenities: Array.isArray(item.amenities) ? item.amenities : [],
+      photos: Array.isArray(item.photos) ? item.photos : [],
+      status: item.status,
+      house_type: item.house_type,
+      payment_status: item.payment_status,
+      approval_timestamp: item.approval_timestamp ?? null,
+      lat: typeof item.lat === 'number' ? item.lat : undefined,
+      lon: typeof item.lon === 'number' ? item.lon : undefined,
+      bedrooms: item.bedrooms,
+      bathrooms: item.bathrooms,
+      area: item.area,
+      views: item.views,
+      rating: item.rating,
+      reviewCount: item.reviewCount,
+      reserved: item.reserved,
+    };
+
+    return normalized;
   },
 
   // Get user's properties
   async getUserProperties(): Promise<Property[]> {
     try {
-      const allProperties = await this.getProperties();
-      // Filter to show only approved/pending properties for demo
-      return allProperties.filter(property => 
-        property.status === 'APPROVED' || property.status === 'PENDING'
-      );
+      // Fetch from dedicated backend endpoint that returns only the authenticated user's properties
+      const data = await apiRequest<any[]>('/my-properties', {
+        method: 'GET',
+      });
+
+      // Normalize backend response to our Property shape
+      const normalized: Property[] = (data || []).map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        location: item.location,
+        price: typeof item.price === 'string' ? parseFloat(item.price) : Number(item.price ?? 0),
+        amenities: Array.isArray(item.amenities) ? item.amenities : [],
+        photos: Array.isArray(item.photos) ? item.photos : [],
+        status: item.status,
+        house_type: item.house_type,
+        payment_status: item.payment_status,
+        approval_timestamp: item.approval_timestamp ?? null,
+        lat: typeof item.lat === 'number' ? item.lat : undefined,
+        lon: typeof item.lon === 'number' ? item.lon : undefined,
+        bedrooms: item.bedrooms,
+        bathrooms: item.bathrooms,
+        area: item.area,
+        views: item.views,
+        rating: item.rating,
+        reviewCount: item.reviewCount,
+        reserved: item.reserved,
+      }));
+
+      return normalized;
     } catch (error) {
       console.error('Error getting user properties:', error);
       return [];
@@ -273,6 +348,111 @@ export const propertyService = {
       method: 'GET',
       // No headers for GET to avoid preflight
     });
+  },
+
+  // Approve and initiate payment for a PENDING property
+  async approveAndPay(id: string): Promise<ApproveAndPayResponse> {
+    return apiRequest<ApproveAndPayResponse>(`/${id}/approve-and-pay`, {
+      method: 'PATCH',
+    });
+  },
+
+  // Approve a property (owner action)
+  async approveProperty(id: string): Promise<{ success: boolean }>{
+    // Using POST to /:id/approve (adjust to your backend path if different)
+    return apiRequest<{ success: boolean }>(`/${id}/approve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ approve: true }),
+    });
+  },
+
+  // Delete a property (owner action) - expects 204 No Content
+  async deleteProperty(id: string): Promise<void> {
+    // We ignore the response body since backend returns 204
+    await apiRequest<unknown>(`/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Toggle reserved flag for a property (owner action)
+  async reserveProperty(id: string, reserved: boolean = true): Promise<Property> {
+    // Backend uses PATCH /:id/reserve and PATCH /:id/unreserve
+    const path = reserved ? `/${id}/reserve` : `/${id}/unreserve`;
+    const options: RequestInit = reserved
+      ? {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reserved: true }),
+        }
+      : {
+          method: 'PATCH',
+        };
+
+    const updated = await apiRequest<any>(path, options);
+
+    const normalized: Property = {
+      id: updated.id,
+      title: updated.title,
+      description: updated.description,
+      location: updated.location,
+      price: typeof updated.price === 'string' ? parseFloat(updated.price) : Number(updated.price ?? 0),
+      amenities: Array.isArray(updated.amenities) ? updated.amenities : [],
+      photos: Array.isArray(updated.photos) ? updated.photos : [],
+      status: updated.status,
+      house_type: updated.house_type,
+      payment_status: updated.payment_status,
+      approval_timestamp: updated.approval_timestamp ?? null,
+      lat: typeof updated.lat === 'number' ? updated.lat : undefined,
+      lon: typeof updated.lon === 'number' ? updated.lon : undefined,
+      bedrooms: updated.bedrooms,
+      bathrooms: updated.bathrooms,
+      area: updated.area,
+      views: updated.views,
+      rating: updated.rating,
+      reviewCount: updated.reviewCount,
+      reserved: updated.reserved,
+    };
+
+    return normalized;
+  },
+
+  // Update a property (owner action)
+  async updateProperty(id: string, data: UpdatePropertyPayload): Promise<Property> {
+    const updated = await apiRequest<any>(`/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const normalized: Property = {
+      id: updated.id,
+      title: updated.title,
+      description: updated.description,
+      location: updated.location,
+      price: typeof updated.price === 'string' ? parseFloat(updated.price) : Number(updated.price ?? 0),
+      amenities: Array.isArray(updated.amenities) ? updated.amenities : [],
+      photos: Array.isArray(updated.photos) ? updated.photos : [],
+      status: updated.status,
+      house_type: updated.house_type,
+      payment_status: updated.payment_status,
+      approval_timestamp: updated.approval_timestamp ?? null,
+      lat: typeof updated.lat === 'number' ? updated.lat : undefined,
+      lon: typeof updated.lon === 'number' ? updated.lon : undefined,
+      bedrooms: updated.bedrooms,
+      bathrooms: updated.bathrooms,
+      area: updated.area,
+      views: updated.views,
+      rating: updated.rating,
+      reviewCount: updated.reviewCount,
+      reserved: updated.reserved,
+    };
+
+    return normalized;
   },
 };
 

@@ -208,7 +208,7 @@ const Header: React.FC = () => {
       {/* ORIGINAL MOBILE NAVIGATION */}
       <div 
         id="nav" 
-        className={`fixed top-0 right-0 h-screen bg-[#222a2f] text-white z-[9999] transition-all duration-600 ease-[cubic-bezier(0.62,0.04,0.3,1.56)] delay-100 ${
+        className={`fixed top-0 right-0 h-screen bg-[#222a2f] text-white z-[9999] transition-all duration-600 ease-spring-bounce delay-100 ${
           isNavOpen ? "w-[53%] opacity-100" : "w-0 opacity-0"
         }`}
         aria-hidden={!isNavOpen}

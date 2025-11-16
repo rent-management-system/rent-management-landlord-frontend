@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { propertyService, Property, PropertySubmission, PropertyResponse } from '@/services/propertyService';
+import { propertyService, Property, PropertySubmission, PropertyResponse, UpdatePropertyPayload, ApproveAndPayResponse } from '@/services/propertyService';
 import { useApi } from '@/services/propertyService';
 
 export const useProperties = () => {
@@ -65,14 +65,63 @@ export const useProperties = () => {
   const submitProperty = useCallback(async (propertyData: PropertySubmission): Promise<PropertyResponse | null> => {
     return execute(() => propertyService.submitProperty(propertyData), {
       successMessage: 'Property submitted successfully! Redirecting to payment...',
-      onSuccess: (response) => {
-        if (response?.payment_url) {
-          window.location.href = response.payment_url;
-        }
+      onSuccess: () => {
         loadUserProperties();
       },
     });
   }, [execute, loadUserProperties]);
+
+  // Approve a property
+  const approveProperty = useCallback(async (id: string) => {
+    return execute(() => propertyService.approveProperty(id), {
+      successMessage: 'Property approved successfully',
+      onSuccess: () => {
+        loadUserProperties();
+        loadMetrics();
+      },
+    });
+  }, [execute, loadUserProperties, loadMetrics]);
+
+  // Delete a property
+  const deleteProperty = useCallback(async (id: string) => {
+    return execute(() => propertyService.deleteProperty(id), {
+      successMessage: 'Property deleted successfully',
+      onSuccess: () => {
+        loadUserProperties();
+        loadMetrics();
+      },
+    });
+  }, [execute, loadUserProperties, loadMetrics]);
+
+  // Reserve/Unreserve a property
+  const reserveProperty = useCallback(async (id: string, reserved: boolean) => {
+    return execute(() => propertyService.reserveProperty(id, reserved), {
+      successMessage: reserved ? 'Property marked as reserved' : 'Reservation removed',
+      onSuccess: () => {
+        loadUserProperties();
+      },
+    });
+  }, [execute, loadUserProperties]);
+
+  // Update an existing property
+  const updateProperty = useCallback(async (id: string, data: UpdatePropertyPayload) => {
+    return execute(() => propertyService.updateProperty(id, data), {
+      successMessage: 'Property updated successfully',
+      onSuccess: () => {
+        loadUserProperties();
+      },
+    });
+  }, [execute, loadUserProperties]);
+
+  // Approve and pay for a pending property
+  const approveAndPay = useCallback(async (id: string): Promise<ApproveAndPayResponse | null> => {
+    return execute(() => propertyService.approveAndPay(id), {
+      // don't show success toast here since we'll redirect to checkout
+      onSuccess: () => {
+        // no-op; UI layer will handle redirect
+      },
+    });
+  }, [execute]);
 
   // Initialize data
   useEffect(() => {
@@ -91,6 +140,11 @@ export const useProperties = () => {
       loadProperties,
       loadUserProperties,
       submitProperty,
+      approveProperty,
+      deleteProperty,
+      reserveProperty,
+      updateProperty,
+      approveAndPay,
     },
   };
 };
