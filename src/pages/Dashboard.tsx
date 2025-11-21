@@ -394,7 +394,7 @@ const Dashboard = () => {
             <div className="text-center p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border border-gray-200/50 dark:border-gray-600/50">
               <div className="flex items-center justify-center gap-1.5 mb-2">
                 <Building className="h-4 w-4 text-primary" />
-                <span className="font-bold text-lg">{property.area || 'N/A'}</span>
+                <span className="font-bold text-lg">{property.area ?? 'N/A'}</span>
               </div>
               <p className="text-xs text-muted-foreground font-medium">{t("area_label")} (m²)</p>
             </div>
