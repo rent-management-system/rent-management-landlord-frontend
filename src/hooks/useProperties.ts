@@ -97,7 +97,10 @@ export const useProperties = () => {
   const reserveProperty = useCallback(async (id: string, reserved: boolean) => {
     return execute(() => propertyService.reserveProperty(id, reserved), {
       successMessage: reserved ? 'Property marked as reserved' : 'Reservation removed',
-      onSuccess: () => {
+      onSuccess: (updated) => {
+        // Optimistic local update for instant UI feedback
+        setUserProperties(prev => prev.map(p => p.id === id ? { ...p, reserved: (updated?.reserved ?? reserved) } : p));
+        // Ensure server truth is reflected
         loadUserProperties();
       },
     });
