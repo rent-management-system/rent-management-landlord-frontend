@@ -127,15 +127,15 @@ const apiRequest = async <T>(
   const url = `${BASE_URL}${endpoint}`;
   
   // CORS FIX: Use mode: 'cors' and proper headers
+  // IMPORTANT: Merge options first, then compose headers so Authorization isn't lost
   const config: RequestInit = {
     mode: 'cors', // Explicitly enable CORS
     credentials: 'omit', // Don't send cookies
-    headers: {
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options.headers,
-    },
-
     ...options,
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...(options.headers as any),
+    },
   };
 
   // CORS FIX: For GET requests, avoid Content-Type to prevent preflight
