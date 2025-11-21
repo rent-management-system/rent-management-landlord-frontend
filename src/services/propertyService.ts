@@ -79,6 +79,30 @@ const getAuthToken = (): string | null => {
          sessionStorage.getItem('access_token');
 };
 
+// Helper: extract reserved boolean from various possible backend representations
+const extractReserved = (obj: any): boolean => {
+  if (!obj || typeof obj !== 'object') return false;
+
+  // Direct boolean flags
+  if (typeof obj.reserved === 'boolean') return obj.reserved;
+  if (typeof obj.is_reserved === 'boolean') return obj.is_reserved;
+  if (typeof obj.isReserved === 'boolean') return obj.isReserved;
+
+  // String flags
+  if (typeof obj.reserved === 'string') return obj.reserved.toLowerCase() === 'true' || obj.reserved.toLowerCase() === 'yes';
+  if (typeof obj.is_reserved === 'string') return obj.is_reserved.toLowerCase() === 'true' || obj.is_reserved.toLowerCase() === 'yes';
+
+  // Reservation objects
+  const reservation = obj.reservation || obj.booking || obj.reserve;
+  if (reservation && typeof reservation === 'object') {
+    if (typeof reservation.active === 'boolean') return reservation.active;
+    if (typeof reservation.status === 'string') return ['active', 'reserved', 'true', 'yes'].includes(reservation.status.toLowerCase());
+    if (reservation.user || reservation.by || reservation.by_user) return true; // any reservation record implies reserved
+  }
+
+  return false;
+};
+
 // Helper: safely extract numeric area from various possible backend keys (supports shallow and common nested fields)
 const extractArea = (obj: any): number | undefined => {
   if (!obj || typeof obj !== 'object') return undefined;
@@ -392,7 +416,7 @@ export const propertyService = {
       views: item.views,
       rating: item.rating,
       reviewCount: item.reviewCount,
-      reserved: item.reserved,
+      reserved: extractReserved(item),
     }));
 
     return normalized;
@@ -426,7 +450,7 @@ export const propertyService = {
       views: item.views,
       rating: item.rating,
       reviewCount: item.reviewCount,
-      reserved: item.reserved,
+      reserved: extractReserved(item),
     };
 
     return normalized;
@@ -461,7 +485,7 @@ export const propertyService = {
         views: item.views,
         rating: item.rating,
         reviewCount: item.reviewCount,
-        reserved: item.reserved,
+        reserved: extractReserved(item),
       }));
 
       return normalized;
@@ -547,7 +571,7 @@ export const propertyService = {
       views: updated.views,
       rating: updated.rating,
       reviewCount: updated.reviewCount,
-      reserved: updated.reserved,
+      reserved: extractReserved(updated),
     };
 
     return normalized;
@@ -583,7 +607,7 @@ export const propertyService = {
       views: updated.views,
       rating: updated.rating,
       reviewCount: updated.reviewCount,
-      reserved: updated.reserved,
+      reserved: extractReserved(updated),
     };
 
     return normalized;

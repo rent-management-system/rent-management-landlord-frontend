@@ -77,7 +77,7 @@ const Dashboard = () => {
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [reservedOnly, setReservedOnly] = useState(true);
+  const [reservedOnly, setReservedOnly] = useState(false);
 
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
