@@ -79,12 +79,50 @@ const getAuthToken = (): string | null => {
          sessionStorage.getItem('access_token');
 };
 
+// Decode JWT payload safely without external deps
+const decodeJwtPayload = (token: string): any | null => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = parts[1]
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    const decoded = atob(payload);
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+};
+
+// Check if token is expired using `exp` claim (seconds)
+const isTokenExpired = (token: string | null): boolean => {
+  if (!token) return true;
+  const payload = decodeJwtPayload(token);
+  if (!payload || typeof payload.exp !== 'number') return false; // if no exp, assume not expired
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  // Add a small skew (30s) to avoid edge cases
+  return payload.exp <= (nowInSeconds + 30);
+};
+
 // CORS-FIXED API request handler
 const apiRequest = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
   const token = getAuthToken();
+  // Proactive expiry check for protected, non-GET requests
+  const method = (options.method || 'GET').toUpperCase();
+  const isProtectedWrite = method !== 'GET';
+  if (isProtectedWrite && isTokenExpired(token)) {
+    // Clear stale tokens and redirect to login
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('access_token');
+    toast.error('Session expired. Please log in again.');
+    setTimeout(() => (window.location.href = '/login'), 1500);
+    throw new Error('Authentication failed. Please log in again.');
+  }
   
   const url = `${BASE_URL}${endpoint}`;
   
