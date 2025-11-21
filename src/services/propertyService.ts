@@ -79,6 +79,76 @@ const getAuthToken = (): string | null => {
          sessionStorage.getItem('access_token');
 };
 
+// Helper: safely extract numeric area from various possible backend keys (supports shallow and common nested fields)
+const extractArea = (obj: any): number | undefined => {
+  if (!obj || typeof obj !== 'object') return undefined;
+
+  const tryParse = (v: any): number | undefined => {
+    if (v === null || v === undefined) return undefined;
+    const n = typeof v === 'string' ? parseFloat(v) : Number(v);
+    return Number.isNaN(n) ? undefined : n;
+  };
+
+  // Known direct keys
+  const directCandidates = [
+    obj.area,
+    obj.area_m2,
+    obj.area_m,
+    obj.area_in_m2,
+    obj.square_meters,
+    obj.squareMeters,
+    obj.floor_area,
+    obj.gross_area,
+    obj.net_area,
+    obj.size,
+    obj.sqm,
+  ];
+  for (const v of directCandidates) {
+    const parsed = tryParse(v);
+    if (parsed !== undefined) return parsed;
+  }
+
+  // Common nested containers
+  const nested = obj.details || obj.meta || obj.attributes || obj.property || obj.specs;
+  if (nested && typeof nested === 'object') {
+    const nestedCandidates = [
+      nested.area,
+      nested.area_m2,
+      nested.area_m,
+      nested.area_in_m2,
+      nested.square_meters,
+      nested.squareMeters,
+      nested.floor_area,
+      nested.gross_area,
+      nested.net_area,
+      nested.size,
+      nested.sqm,
+    ];
+    for (const v of nestedCandidates) {
+      const parsed = tryParse(v);
+      if (parsed !== undefined) return parsed;
+    }
+
+    // Fuzzy key search within nested object
+    for (const [k, v] of Object.entries(nested)) {
+      if (/(^|_)(area|sqm|square|floor_area)(_|$)/i.test(k)) {
+        const parsed = tryParse(v as any);
+        if (parsed !== undefined) return parsed;
+      }
+    }
+  }
+
+  // Fuzzy key search at root level
+  for (const [k, v] of Object.entries(obj)) {
+    if (/(^|_)(area|sqm|square|floor_area)(_|$)/i.test(k)) {
+      const parsed = tryParse(v as any);
+      if (parsed !== undefined) return parsed;
+    }
+  }
+
+  return undefined;
+};
+
 // Decode JWT payload safely without external deps
 const decodeJwtPayload = (token: string): any | null => {
   try {
@@ -296,10 +366,36 @@ export const propertyService = {
     const endpoint = queryString ? `/?${queryString}` : '/';
     
     // CORS FIX: No Content-Type header for GET requests
-    return apiRequest<Property[]>(endpoint, {
+    const data = await apiRequest<any[]>(endpoint, {
       method: 'GET',
       // No headers for GET to avoid preflight
     });
+
+    // Normalize list payload
+    const normalized: Property[] = (data || []).map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      location: item.location,
+      price: typeof item.price === 'string' ? parseFloat(item.price) : Number(item.price ?? 0),
+      amenities: Array.isArray(item.amenities) ? item.amenities : [],
+      photos: Array.isArray(item.photos) ? item.photos : [],
+      status: item.status,
+      house_type: item.house_type,
+      payment_status: item.payment_status,
+      approval_timestamp: item.approval_timestamp ?? null,
+      lat: typeof item.lat === 'number' ? item.lat : undefined,
+      lon: typeof item.lon === 'number' ? item.lon : undefined,
+      bedrooms: item.bedrooms,
+      bathrooms: item.bathrooms,
+      area: extractArea(item),
+      views: item.views,
+      rating: item.rating,
+      reviewCount: item.reviewCount,
+      reserved: item.reserved,
+    }));
+
+    return normalized;
   },
 
   // Get specific property by ID
@@ -326,7 +422,7 @@ export const propertyService = {
       lon: typeof item.lon === 'number' ? item.lon : undefined,
       bedrooms: item.bedrooms,
       bathrooms: item.bathrooms,
-      area: item.area,
+      area: extractArea(item),
       views: item.views,
       rating: item.rating,
       reviewCount: item.reviewCount,
@@ -361,7 +457,7 @@ export const propertyService = {
         lon: typeof item.lon === 'number' ? item.lon : undefined,
         bedrooms: item.bedrooms,
         bathrooms: item.bathrooms,
-        area: item.area,
+        area: extractArea(item),
         views: item.views,
         rating: item.rating,
         reviewCount: item.reviewCount,
@@ -447,7 +543,7 @@ export const propertyService = {
       lon: typeof updated.lon === 'number' ? updated.lon : undefined,
       bedrooms: updated.bedrooms,
       bathrooms: updated.bathrooms,
-      area: updated.area,
+      area: extractArea(updated),
       views: updated.views,
       rating: updated.rating,
       reviewCount: updated.reviewCount,
@@ -483,7 +579,7 @@ export const propertyService = {
       lon: typeof updated.lon === 'number' ? updated.lon : undefined,
       bedrooms: updated.bedrooms,
       bathrooms: updated.bathrooms,
-      area: updated.area,
+      area: extractArea(updated),
       views: updated.views,
       rating: updated.rating,
       reviewCount: updated.reviewCount,
