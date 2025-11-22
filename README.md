@@ -1,170 +1,233 @@
-# Rent Management — Landlord Frontend
+# Rent Management - Landlord Frontend
+
+[![React Version](https://img.shields.io/badge/react-18.3+-blue.svg)](https://reactjs.org/)
+[![Framework](https://img.shields.io/badge/framework-Vite-green.svg)](https://vitejs.dev/)
+[![UI Library](https://img.shields.io/badge/UI-Shadcn/UI-black.svg)](https://ui.shadcn.com/)
+[![Styling](https://img.shields.io/badge/styling-TailwindCSS-cyan.svg)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A modern, responsive, and feature-rich frontend application built with React and Vite, designed for landlords. This micro-frontend is a key part of the Rent Management System, providing property owners with a comprehensive dashboard to manage their listings, track performance, and handle payments.
+
+---
 
 ## Table of Contents
-- [Introduction](#introduction)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Technologies Used](#technologies-used)
-- [Setup Guide](#setup-guide)
+
+- [About The Project](#about-the-project)
+- [Architectural Design](#architectural-design)
+  - [Component-Based Architecture](#component-based-architecture)
+  - [Key Directory Structure](#key-directory-structure)
+- [Technology Stack](#technology-stack)
+- [External Service Integrations](#external-service-integrations)
+  - [Property Listing API](#property-listing-api)
+  - [Authentication Flow](#authentication-flow)
+- [Key Features](#key-features)
+- [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
-  - [Environment Variables](#environment-variables)
-  - [Installation](#installation)
-  - [Running the Application](#running-the-application)
-  - [Build & Preview](#build--preview)
-- [API Endpoints](#api-endpoints)
-  - [Properties](#properties)
-  - [Approvals & Payments (Chapa)](#approvals--payments-chapa)
-  - [Reserve / Unreserve](#reserve--unreserve)
-  - [Auth Callback](#auth-callback)
-- [Micro-Frontend](#micro-frontend)
-- [Logging & Error Handling](#logging--error-handling)
-- [Security & CORS](#security--cors)
-- [Planned: Gebeta Map](#planned-gebeta-map)
+  - [Local Installation](#local-installation)
+- [Available Scripts](#available-scripts)
 - [Contributing](#contributing)
-- [Maintainers](#maintainers)
 - [License](#license)
+- [Contact](#contact)
 
-## Introduction
-The Landlord Frontend is a modern, production-ready single-page application for managing property listings, approvals, and payments within the Rent Management System. It integrates with the backend Property Listing Service and the Chapa Payment Gateway. The UI is built with React, TypeScript, Tailwind, and shadcn/ui with strong internationalization support.
+---
 
-## Features
-- Create and manage property listings (with photos, amenities, details)
-- Edit property (title, description, price, amenities)
-- Approve & Pay: initiate approval and redirect to Chapa checkout (500 BIRR)
-- Reserve / Unreserve property status
-- View property details
-- View metrics and landlord-only listings
-- Multilingual UI (Amharic, English, Afan Oromo)
-- Error boundary to prevent white screens in production
+## About The Project
 
-## Architecture
+This application serves as the primary interface for landlords within the **Rent Management System**. Its main goal is to offer a seamless and intuitive user experience for managing property portfolios. By using a dedicated micro-frontend, we ensure that the landlord-facing features can be developed, deployed, and scaled independently from other parts of the platform, such as the renter's portal or backend services.
+
+The dashboard provides landlords with at-a-glance metrics, a detailed view of their properties, and the tools needed to edit, approve, and manage the lifecycle of a property listing.
+
+---
+
+## Architectural Design
+
+The application is designed with modern frontend principles to ensure scalability, maintainability, and a clean separation of concerns.
+
+### Component-Based Architecture
+
+The project is built using **React**, following a component-based architecture. This approach promotes reusability and modularity.
+
 ```mermaid
-flowchart TD
-  subgraph UI[UI Layer]
-    Landlord[Landlord Page]
-    Cards[Property Cards]
-    Dialogs[Dialogs: Edit / Approve\nReserve/Unreserve]
-    Details[Property Details]
-  end
+graph TD
+    A[Pages] --> B(Reusable Components)
+    A --> C{Hooks}
+    C --> D[Services]
+    D --> E[(API)]
 
-  subgraph Services[Service Layer]
-    API[propertyService.ts]
-  end
-
-  subgraph Backend[Backend API]
-    Submit[/POST /properties/submit/]
-    List[/GET /properties/]
-    ById[/GET /properties/{id}/]
-    MyProps[/GET /properties/my-properties/]
-    Metrics[/GET /properties/metrics/]
-    ApprovePay[/PATCH /properties/{id}/approve-and-pay]
-    Reserve[/PATCH /properties/{id}/reserve]
-    Unreserve[/PATCH /properties/{id}/unreserve]
-    Update[/PUT /properties/{id}]
-    Delete[/DELETE /properties/{id}]
-  end
-
-  Landlord --> Cards
-  Landlord --> Dialogs
-  Landlord --> Details
-
-  Cards -->|actions| API
-  Dialogs -->|actions| API
-  Details -->|load| API
-
-  API --> Submit & List & ById & MyProps & Metrics & ApprovePay & Reserve & Unreserve & Update & Delete
+    subgraph "Presentation Layer"
+        A
+        B
+    end
+    subgraph "Business Logic & State"
+        C
+    end
+    subgraph "Data Layer"
+        D
+    end
 ```
 
-## Technologies Used
-- React 18, TypeScript, Vite
-- TailwindCSS, shadcn/ui (Radix primitives)
-- i18next + http-backend + language detector
-- Sonner + shadcn toaster
-- TanStack Query (QueryClientProvider is set up)
+-   **Pages (`src/pages`)**: Top-level components that represent distinct views or routes in the application (e.g., `Dashboard`, `PropertyDetails`).
+-   **Reusable Components (`src/components`)**: The UI is broken down into smaller, reusable components. This includes both general components (`Header`, `Footer`) and UI primitives from **Shadcn/UI** (`Button`, `Card`, etc.).
+-   **Hooks (`src/hooks`)**: Custom React hooks (e.g., `useProperties`) are used to encapsulate and manage complex state, side effects, and data-fetching logic, keeping the page components clean and focused on rendering.
+-   **Services (`src/services`)**: All communication with external APIs is centralized in the `propertyService.ts` module. This layer is responsible for making HTTP requests, handling authentication tokens, and normalizing data.
 
-## Setup Guide
+### Key Directory Structure
+
+-   `src/pages`: Each file corresponds to a major route/view.
+-   `src/components`: Contains reusable UI components, with `src/components/ui` housing the Shadcn/UI elements.
+-   `src/services`: Handles all API communication.
+-   `src/hooks`: Custom hooks for managing state and side-effects.
+-   `src/lib`: Core utility functions.
+-   `public/locales`: Contains JSON files for multi-language support (i18n).
+
+---
+
+## Technology Stack
+
+-   **Core Framework:** [React](https://reactjs.org/) & [Vite](https://vitejs.dev/)
+-   **Language:** [TypeScript](https://www.typescriptlang.org/)
+-   **UI Component Library:** [Shadcn/UI](https://ui.shadcn.com/)
+-   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+-   **Routing:** [React Router](https://reactrouter.com/)
+-   **Data Fetching & State:** [TanStack Query (React Query)](https://tanstack.com/query/latest)
+-   **Forms:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/) for validation
+-   **Internationalization (i18n):** [i18next](https://www.i18next.com/)
+-   **Linting:** [ESLint](https://eslint.org/)
+
+---
+
+## External Service Integrations
+
+### Property Listing API
+
+The frontend communicates with a backend microservice responsible for property data. All interactions are handled via a RESTful API.
+
+-   **Service Location**: `src/services/propertyService.ts`
+-   **Base URL**: Configured via the `VITE_API_BASE_URL` environment variable.
+-   **Key Operations**:
+    -   Fetching all properties and properties specific to the logged-in user.
+    -   Submitting, updating, and deleting property listings.
+    -   Initiating the payment process for property approval.
+    -   Marking properties as reserved.
+
+### Authentication Flow
+
+Authentication is handled via JWT (JSON Web Tokens) provided by a central authentication service.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Auth Service
+    participant Landlord Frontend
+
+    User->>Auth Service: Logs in with credentials
+    Auth Service-->>Landlord Frontend: Redirects to /auth/callback with token
+    Landlord Frontend->>Landlord Frontend: Stores token in localStorage
+    Landlord Frontend->>User: Redirects to Dashboard
+    User->>Landlord Frontend: Interacts with app
+    Landlord Frontend->>Property Listing API: Includes Bearer token in API requests
+```
+
+1.  The user authenticates with a separate auth service.
+2.  Upon successful login, the user is redirected back to this application at the `/auth/callback` route.
+3.  The `AuthCallbackRedirect.tsx` component extracts the `access_token` from the URL hash.
+4.  The token is stored in the browser's `localStorage`.
+5.  The `propertyService` automatically attaches this token as a `Bearer` token to the `Authorization` header for all subsequent protected API requests.
+
+---
+
+## Key Features
+
+-   **Comprehensive Landlord Dashboard**: At-a-glance view of total listings, approval status, views, and potential revenue.
+-   **Full Property CRUD**: Create, Read, Update, and Delete property listings through intuitive forms and dialogs.
+-   **Secure Authentication**: Robust JWT-based authentication flow with automatic token handling.
+-   **Payment Integration**: Seamlessly redirects landlords to a payment gateway (e.g., Chapa) to pay for listing approvals.
+-   **Multi-language Support**: Fully internationalized UI supporting English, Amharic, and Oromo.
+-   **Advanced Filtering & Search**: Easily find properties by title, location, status, or reservation status.
+-   **Responsive Design**: A mobile-first design that works beautifully on all screen sizes, from desktops to smartphones.
+-   **Rich UI Components**: Built with the highly-acclaimed Shadcn/UI and Tailwind CSS for a modern and consistent look and feel.
+-   **Real-time Feedback**: Utilizes toasts and notifications to provide instant feedback for user actions.
+
+---
+
+## Getting Started
+
+Follow these instructions to set up and run the project on your local machine.
 
 ### Prerequisites
-- Node.js 18+ and npm
 
-### Environment Variables
-Create a `.env` file in the project root (never commit it). See `.env.example`.
+-   Node.js (v18 or higher)
+-   A package manager like `npm`, `yarn`, or `bun`.
 
-```
-VITE_API_BASE_URL="https://property-listing-service.onrender.com/api/v1/properties"
-```
+### Local Installation
 
-### Installation
-```
-npm install
-```
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/rent-management-system/rent-management-landlord-frontend.git
+    cd rent-management-landlord-frontend
+    ```
 
-### Running the Application
-```
-npm run dev
-```
-- Dev server starts (e.g., http://localhost:5173 or assigned port).
+2.  **Set up the environment file:**
+    Create a `.env` file in the root directory by copying the example file.
+    ```sh
+    cp .env.example .env
+    ```
+    Open the `.env` file and configure the variables. At a minimum, you'll need to set the backend API URL.
+    ```env
+    # The base URL for the backend property listing service
+    VITE_API_BASE_URL="http://localhost:8000/api/v1/properties"
+    ```
 
-### Build & Preview
-```
-npm run build
-npm run preview
-```
+3.  **Install dependencies:**
+    ```sh
+    npm install
+    ```
 
-## API Endpoints
-This frontend calls the Property Listing Service and related endpoints.
+4.  **Run the development server:**
+    ```sh
+    npm run dev
+    ```
+    The application will be available at `http://localhost:8080`.
 
-### Properties
-- POST `/api/v1/properties/submit` — submit listing (FormData; photos supported)
-- GET `/api/v1/properties/` — public list (filters supported)
-- GET `/api/v1/properties/{id}` — details
-- GET `/api/v1/properties/my-properties` — landlord’s listings
-- GET `/api/v1/properties/metrics` — basic metrics
-- PUT `/api/v1/properties/{id}` — update listing (title, description, price, amenities)
-- DELETE `/api/v1/properties/{id}` — delete listing (returns 204)
+---
 
-### Approvals & Payments (Chapa)
-- PATCH `/api/v1/properties/{id}/approve-and-pay` — returns `checkout_url`; UI redirects to Chapa
+## Available Scripts
 
-### Reserve / Unreserve
-- PATCH `/api/v1/properties/{id}/reserve` — mark reserved (body: `{ reserved: true }`)
-- PATCH `/api/v1/properties/{id}/unreserve` — remove reserved status
+-   `npm run dev`: Starts the development server with hot-reloading.
+-   `npm run build`: Compiles and bundles the application for production.
+-   `npm run lint`: Runs the ESLint linter to check for code quality issues.
+-   `npm run preview`: Starts a local server to preview the production build.
 
-### Auth Callback
-- GET `/auth/callback?token=...` — stored to `localStorage` as `authToken` client-side, used for Authorization headers
-
-## Micro-Frontend
-This repository is designed to be embedded as a micro-frontend (route-level mount or MF/iframe integration) providing the landlord feature set.
-
-## Logging & Error Handling
-- ErrorBoundary wraps the application to avoid blank screens and show a friendly fallback.
-- Non-blocking toast notifications for most errors; CORS/network errors are suppressed to avoid noise.
-
-## Security & CORS
-- Authorization: Bearer token read from `localStorage` as `authToken` (or `access_token` fallback).
-- GET requests avoid setting `Content-Type` to minimize preflight CORS.
-- 401 responses clear tokens and can redirect to login.
-
-## Planned: Gebeta Map
-The UI is map-ready. Gebeta Map integration will display property geolocation (using `lat/lon` fields) on details and list views.
+---
 
 ## Contributing
-We welcome issues and PRs! Please:
-- Open a descriptive issue
-- Keep PRs focused and small
-- Include screenshots/screencasts for UI changes
 
-Standard workflow:
-```
-fork → feature branch → commit → open PR → review → merge
-```
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-## Maintainers
-- NEHAMIYA — UI Developer
-- DAGMAI TEFERI — UI updates and integrations
-  - Email: dagiteferi2011@gmail.com
-  - WhatsApp: +251920362324
-- ABENEZER — Developer
+This project is developed and maintained by:
+-   [Dagmawi Teferi](https://github.com/dagiteferi)
+-   [Abeni](https://github.com/Abeni5)
+-   [Nehemya Biruk](https://github.com/Nehmyabiruk)
+
+Please fork the repository and open a pull request with your proposed changes.
+
+1.  Fork the Project
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the Branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
+
+---
 
 ## License
-Open source. See repository for license or open an issue if missing.
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+## Contact
+
+**Dagmawi Teferi**
+
+-   **Email:** [dagiteferi2011@gmail.com](mailto:dagiteferi2011@gmail.com)
+-   **Project Link:** [https://github.com/rent-management-system/rent-management-landlord-frontend](https://github.com/rent-management-system/rent-management-landlord-frontend)
