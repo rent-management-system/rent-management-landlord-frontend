@@ -57,20 +57,23 @@ const Header: React.FC = () => {
   return (
     <div className="flex items-center justify-between pt-4 px-3 relative z-20">
       <div>
-        <img
-          src="/Black.png"
-          alt="Logo"
-          className="h-20"
-        />
+        <Link to="/">
+          <img
+            src="/Black.png"
+            alt="Logo"
+            className="h-20 cursor-pointer hover:opacity-90 transition-opacity"
+          />
+        </Link>
       </div>
 
       <nav className="items-center space-x-12 list-none hidden md:flex">
-        <a
-          href="https://rent-management-system-tau.vercel.app/"
+        <Link
+          to="/"
           className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
+          onClick={closeNav}
         >
           {t("home")}
-        </a>
+        </Link>
         <a
           href="https://rent-management-system-tau.vercel.app/#about"
           className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
@@ -89,12 +92,14 @@ const Header: React.FC = () => {
         >
           {t("testimonials")}
         </a>
-        <a
-          href="https://rent-management-system-tau.vercel.app/contact"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
-        >
-          {t("contact")}
-        </a>
+        <li className="nav-item">
+          <Link 
+            className="nav-link text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer" 
+            to="/contact"
+          >
+            {t('contact')}
+          </Link>
+        </li>
       </nav>
 
       <div className="flex items-center">
@@ -265,13 +270,13 @@ const Header: React.FC = () => {
       >
         <ul className="ul" style={{ margin: 0, position: "absolute", top: "30%", left: "7vw", padding: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           <li className="li li1" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
-            <a 
-              href="https://rent-management-system-tau.vercel.app/" 
+            <Link 
+              to="/" 
               onClick={closeNav}
               style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
             >
               {t("home")}
-            </a>
+            </Link>
           </li>
           <li className="li li2" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
             <a 
@@ -300,14 +305,15 @@ const Header: React.FC = () => {
               {t("testimonials")}
             </a>
           </li>
-          <li className="li li5" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
-            <a 
-              href="https://rent-management-system-tau.vercel.app/contact" 
+          <li className="nav-item" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px" }}>
+            <Link 
+              className="nav-link" 
+              to="/contact"
               onClick={closeNav}
               style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
             >
-              {t("contact")}
-            </a>
+              {t('contact')}
+            </Link>
           </li>
           <li className="li">
             <select
