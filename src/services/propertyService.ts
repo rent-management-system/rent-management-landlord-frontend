@@ -176,11 +176,10 @@ const apiRequest = async <T>(
     }
     
     if (error instanceof Error) {
-      // Temporarily commented out for local development
-      // if (error.message.includes('Authentication failed')) {
-      //   toast.error('Session expired. Please log in again.');
-      //   setTimeout(() => window.location.href = '/login', 2000);
-      // }
+      if (error.message.includes('Authentication failed')) {
+        toast.error('Session expired. Please log in again.');
+        setTimeout(() => window.location.href = '/login', 2000);
+      }
       throw error;
     }
     
