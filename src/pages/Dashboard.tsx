@@ -369,8 +369,8 @@ const Dashboard = () => {
           {/* Price */}
           <div className="mb-5 p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl border border-primary/10">
             <div className="flex items-center gap-2 text-2xl font-bold text-primary">
-              <DollarSign className="h-5 w-5" />
-              {property.price?.toLocaleString() || '0'} ETB
+              <span>ETB</span>
+              {property.price?.toLocaleString() || '0'}
             </div>
             <p className="text-xs text-muted-foreground mt-1 font-medium">{t("monthly_rental_price")}</p>
           </div>
