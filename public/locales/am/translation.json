@@ -1,19 +1,19 @@
 {
   "home": "መነሻ",
   "about": "ስለ እኛ",
-  "properties": "ንብረቶች",
+  "properties": "ቤቶች",
   "testimonials": "ምስክርነቶች",
-  "contact": "እውቂያ",
+  "contact": "ያግኙን",
   "select_language": "ቋንቋ ይምረጡ",
   "language": "ቋንቋ",
   "amharic_option": "አማርኛ",
   "english_option": "እንግሊዝኛ",
   "afan_oromo_option": "አፋን ኦሮሞ",
-  "your_ai_rent_management_system": "የእርስዎ AI የኪራይ አስተዳደር ስርዓት",
+  "your_ai_rent_management_system": "የእርስዎ የAI የኪራይ አስተዳደር ስርዓት",
   "bate_exclamation": "ባቴ!",
   "sign_up": "ይመዝገቡ",
-  "view_properties": "ንብረቶችን ይመልከቱ",
-  "add_properties": "ንብረቶችን ያክሉ",
+  "view_properties": "ቤቶችን ይመልከቱ",
+  "add_properties": "ቤቶችን ያክሉ",
   "submitListingWithPrice": "ዝርዝር አስገባ - 500 ብር",
   "about_us": "ስለ እኛ",
   "basic_information": "መሰረታዊ መረጃ",
@@ -21,7 +21,7 @@
   "propertyTitlePlaceholder": "ለምሳሌ፣ በቦሌ የሚገኝ ዘመናዊ አፓርታማ",
   "locationPlaceholder": "ለምሳሌ፣ ቦሌ፣ አዲስ አበባ",
   "pricePlaceholder": "ለምሳሌ፣ 10000",
-  "find_your_next_home": "ቀጣይ ቤትዎን በቀላሉና በእርግጥ ያግኙ",
+  "find_your_next_home": "ቀጣይ ቤትዎን በቀላሉ ያግኙ",
   "about_paragraph": "የኪራይ አስተዳደር ስርዓቱ ባለቤቶችና ተከራዮች መገናኘት የሚያደርጉበትን መንገድ ያሻሽላል። ይህ ስርዓት ለኢትዮጵያ የተዘጋጀ ሲሆን፣ ውድ የመካከለኛ አገልግሎት ክፍያዎችን በቀላሉ፣ በደህንነት እና በቅናሽ የተመሠረተ የድር መድረክ ይተካል። ባለቤቶች ቤቶቻቸውን በክፍያ በመለጠፍ ሊያዘምኑ ይችላሉ፣ ተከራዮች ደግሞ ያልተከፈለ የፍለጋ አገልግሎትን በዝርዝር መረጃ፣ ካርታና በተለያዩ ቋንቋዎች (እንግሊዝኛ፣ አማርኛ፣ እና አፋን ኦሮሞ) ጋር ሊጠቀሙ ይችላሉ። ይህ መድረክ ግልፅነትን፣ መዳረሻን እና ቀላል የኪራይ ሂደትን ያረጋግጣል — ለዘመናዊ የኪራይ አስተዳደር ዕርግጠኝነትን እና ተስማሚነትን ያመጣል።",
   "property_types": "የንብረት አይነቶች",
   "active_listings": "ንቁ ዝርዝሮች",
@@ -56,12 +56,12 @@
   "house_luxury_villa_name": "የቅንጦት ቪላ",
   "house_cozy_cottage_name": "ምቹ ኮቴጅ",
   "house_modern_townhouse_name": "ዘመናዊ ታውንሃውስ",
-  "house_rural_farmhouse_name": "ገጠር የእርሻ ቤት",
-  "house_beachfront_property_name": "የባህር ዳርቻ ንብረት",
+  "house_rural_farmhouse_name": "የገጠር እርሻ ቤት",
+  "house_beachfront_property_name": "የባህር ዳርቻ ቤት",
   "house_historic_home_name": "ታሪካዊ ቤት",
 
-  "furnishing_furnished": "የቤት እቃዎች የተሟሉ",
-  "furnishing_unfurnished": "የቤት እቃዎች ያልተሟሉ",
+  "furnishing_furnished": "የተሟሉ የቤት እቃዎች ",
+  "furnishing_unfurnished": "ያልተሟሉ የቤት እቃዎች ",
 
   "bedrooms_1": "1 መኝታ ክፍል",
   "bedrooms": "መኝታ ክፍሎች",
@@ -249,7 +249,7 @@
   ,"load_more_properties": "ተጨማሪ ንብረቶች ይጫኑ"
   ,"quick_view": "በፍጥነት እይታ"
   ,"monthly_rental_price": "ወርሃዊ የኪራይ ዋጋ"
-  ,"loading_properties": "ንብረቶችዎን በመጫን ላይ..."
+  ,"loading_properties": "ቤቶዎን በመጫን ላይ..."
   ,"contactUs": "አግኙን"
   ,"faq": "ተደጋጋሚ ጥያቄዎች"
   ,"allRightsReserved": "ሁሉም መብቶች የተጠበቁ ናቸው"
