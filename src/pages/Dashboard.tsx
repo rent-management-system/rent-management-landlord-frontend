@@ -694,41 +694,7 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-primary/20">
-                <CardContent className="p-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <Zap className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <p className="font-semibold text-sm">{t("quick_stats")}</p>
-                </CardContent>
-              </Card>
-              <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-primary/20">
-                <CardContent className="p-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <UserCheck className="h-6 w-6 text-green-600" />
-                  </div>
-                  <p className="font-semibold text-sm">{t("tenants")}</p>
-                </CardContent>
-              </Card>
-              <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-primary/20">
-                <CardContent className="p-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <CreditCard className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <p className="font-semibold text-sm">{t("payments")}</p>
-                </CardContent>
-              </Card>
-              <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-primary/20">
-                <CardContent className="p-3">
-                  <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <ChartNoAxesCombined className="h-6 w-6 text-orange-600" />
-                  </div>
-                  <p className="font-semibold text-sm">{t("reports")}</p>
-                </CardContent>
-              </Card>
-            </div>
+
           </div>
         </section>
 
