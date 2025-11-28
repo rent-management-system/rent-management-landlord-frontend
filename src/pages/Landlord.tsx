@@ -22,6 +22,13 @@ import type { PropertySubmission } from "@/services/propertyService";
 
 // My Properties card and management moved to Dashboard page
 
+// Define scroll behavior options type
+interface ScrollOptions {
+  behavior?: 'auto' | 'smooth';
+  block?: 'start' | 'center' | 'end' | 'nearest';
+  inline?: 'start' | 'center' | 'end' | 'nearest';
+}
+
 const Landlord = () => {
   const { t } = useTranslation();
   const { actions } = useProperties();
@@ -271,7 +278,7 @@ const Landlord = () => {
           <FrontPage onListPropertyClick={() => {
             const element = document.getElementById('create-listing');
             if (element) {
-              (element as HTMLElement).scrollIntoView({ behavior: 'smooth' });
+              (element as unknown as { scrollIntoView: (options?: ScrollOptions) => void }).scrollIntoView({ behavior: 'smooth' });
             }
           }} />
         </Suspense>
