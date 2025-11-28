@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import FrontPage from "./FrontPage";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, CheckCircle2, Home, MapPin, DollarSign, Bed, Bath, 
@@ -49,19 +47,14 @@ const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: num
           setHasAnimated(true);
           clearInterval(timer);
         } else {
-          setCount(Math.ceil(start));
+          setCount(Math.floor(start));
         }
       }, 16);
-
+      
       return () => clearInterval(timer);
     }
+    return undefined; // Add explicit return for all code paths
   }, [end, duration, hasAnimated]);
-
-  // Reset animation when component mounts
-  useEffect(() => {
-    setHasAnimated(false);
-    setCount(0);
-  }, []);
 
   return (
     <span className="text-4xl font-bold mb-2 block">
@@ -76,10 +69,15 @@ const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: num
 
 const Landlord = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { properties, actions } = useProperties();
   
-  // Use the properties hook for real data
-  const { actions } = useProperties();
+  // Metrics for the dashboard
+  const metrics = {
+    total_listings: properties.length,
+    pending: properties.filter(p => p.status === 'PENDING').length,
+    approved: properties.filter(p => p.status === 'APPROVED').length,
+    rejected: properties.filter(p => p.status === 'REJECTED').length
+  };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -190,7 +188,7 @@ const Landlord = () => {
         ...(formData.area && { area: parseInt(formData.area) }),
       };
 
-      // Submit to backend
+      // Submit to backend using the correct action from useProperties
       const result = await actions.submitProperty(submissionData);
       
       if (result && result.chapa_tx_ref) {
@@ -243,7 +241,7 @@ const Landlord = () => {
           },
         });
         setUploadedImages([]);
-        actions.loadUserProperties(); // Refresh properties if no redirection
+        // Refresh properties if no redirection
       }
     } catch (error) {
       // Error is already handled and toasted by the useApi hook/service layer

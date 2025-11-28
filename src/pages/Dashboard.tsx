@@ -38,7 +38,18 @@ import {
   Building2,
   CheckCircle2,
   Bath,
-  CheckCircle2,
+  Wifi,
+  Car,
+  Shield,
+  Dumbbell,
+  Trees,
+  Building,
+  ExternalLink,
+  Bed,
+  TrendingUp,
+  Edit,
+  Crown,
+  CreditCard,
 } from "lucide-react";
 
 const Dashboard = () => {
