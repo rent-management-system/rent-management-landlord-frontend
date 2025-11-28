@@ -249,15 +249,19 @@ const Dashboard = () => {
     }
   };
 
-  const filteredProperties = userProperties.filter(property => {
+  // Ensure userProperties is an array before filtering
+  const filteredProperties = (Array.isArray(userProperties) ? userProperties : []).filter(property => {
+    if (!property) return false;
+    
     // First check search term match
-    const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = property.title?.toLowerCase().includes(searchLower) ||
+      property.location?.toLowerCase().includes(searchLower);
     
-    // Check reserved status if reservedOnly is true
-    const matchesReserved = !reservedOnly || property.reserved === true;
+    // Check reserved status if reservedOnly filter is active
+    const matchesReserved = !reservedOnly || (property.reserved === true);
     
-    // Check status filter
+    // Check status filter (only if not filtering by reserved)
     const matchesStatus = statusFilter === "ALL" || property.status === statusFilter;
     
     return matchesSearch && matchesStatus && matchesReserved;
@@ -801,15 +805,19 @@ const Dashboard = () => {
                         variant={reservedOnly ? "default" : "outline"}
                         size="lg"
                         onClick={() => {
-                          setReservedOnly(prev => !prev);
+                          const newReservedOnly = !reservedOnly;
+                          setReservedOnly(newReservedOnly);
                           // Reset status filter when toggling reserved
-                          if (!reservedOnly) {
+                          if (newReservedOnly) {
                             setStatusFilter("ALL");
                           }
                         }}
                         className="rounded-2xl border-2 gap-2"
                       >
-                        <Star className="h-4 w-4" /> {t("reserved")} {reservedOnly && `(${userProperties.filter(p => p.reserved).length})`}
+                        <Star className="h-4 w-4" /> {t("reserved")} 
+                        <span className="ml-1">
+                          ({userProperties.filter(p => p?.reserved).length})
+                        </span>
                       </Button>
                     </div>
                   </div>
