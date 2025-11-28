@@ -21,7 +21,7 @@ const AuthCallback = () => {
         
         // Small delay to show success message
         setTimeout(() => {
-          navigate("/landlord", { replace: true });
+          navigate("/", { replace: true });
         }, 1000);
         
       } catch (error) {

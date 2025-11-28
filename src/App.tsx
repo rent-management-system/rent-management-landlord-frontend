@@ -14,7 +14,7 @@ import LoadingSpinner from "@/components/ui/loading-spinner";
 const Landlord = lazy(() => import('./pages/Landlord'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
-const AuthCallbackWithLogs = lazy(() => import('./components/AuthCallbackRedirect'));
+const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -54,7 +54,7 @@ const App = () => {
                   <Route path="/" element={<Landlord />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/property/:id" element={<PropertyDetails />} />
-                  <Route path="/auth/callback" element={<AuthCallbackWithLogs />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/payment/success" element={<PaymentSuccess />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
