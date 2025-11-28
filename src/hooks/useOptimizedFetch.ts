@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-// Import only what we need from @tanstack/query-core to avoid unused imports
-import type { QueryClient } from '@tanstack/query-core';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface CacheEntry<T> {
   data: T;
@@ -8,13 +6,19 @@ interface CacheEntry<T> {
   maxAge: number;
 }
 
-interface RequestOptions<T> {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  headers?: Record<string, string>;
-  body?: unknown;
-  cacheTime?: number; // in milliseconds
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+interface FetchOptions extends RequestInit {
+  method?: HttpMethod;
+  headers?: HeadersInit;
+  body?: BodyInit | null;
+  cacheTime?: number;
   retryCount?: number;
   retryDelay?: number;
+}
+
+interface RequestOptions<T> extends Omit<FetchOptions, 'body'> {
+  body?: unknown;
   onSuccess?: (data: T) => void;
   onError?: (error: Error) => void;
 }
@@ -22,17 +26,6 @@ interface RequestOptions<T> {
 // In-memory cache with proper typing
 const cache = new Map<string, CacheEntry<unknown>>();
 const pendingRequests = new Map<string, Promise<unknown>>();
-
-// Initialize QueryClient only if needed
-let _queryClient: QueryClient | null = null;
-
-// Lazy initialization of QueryClient
-const getQueryClient = (): QueryClient => {
-  if (!_queryClient) {
-    _queryClient = new QueryClient();
-  }
-  return _queryClient;
-};
 
 export function useOptimizedFetch<T = unknown>(
   url: string, 
@@ -42,21 +35,37 @@ export function useOptimizedFetch<T = unknown>(
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const controllerRef = useRef<AbortController | null>(null);
-  const { 
-    method = 'GET', 
-    headers = {}, 
-    body, 
+  
+  const {
+    method = 'GET',
+    headers = { 'Content-Type': 'application/json' },
+    body,
     cacheTime = 5 * 60 * 1000, // 5 minutes default cache time
-    retryCount = 2, 
+    retryCount = 2,
     retryDelay = 1000,
     onSuccess,
-    onError
+    onError: onErrorCallback,
+    ...fetchOptions
   } = options;
 
   const executeRequest = useCallback(async (): Promise<T> => {
     // Check cache first
-    const cacheKey = `${method}:${url}:${JSON.stringify(body)}`;
+    const cacheKey = `${method}:${url}:${body ? JSON.stringify(body) : ''}`;
     const cached = cache.get(cacheKey) as CacheEntry<T> | undefined;
+    
+    // Create request options
+    const requestOptions: RequestInit = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers
+      },
+      ...fetchOptions
+    };
+    
+    if (body && method !== 'GET') {
+      requestOptions.body = JSON.stringify(body);
+    }
     
     if (cached && Date.now() - cached.timestamp < cached.maxAge) {
       return cached.data;
@@ -148,15 +157,19 @@ export function useOptimizedFetch<T = unknown>(
     try {
       const result = await executeRequest();
       setData(result);
-      onSuccess?.(result);
+      if (onSuccess) {
+        onSuccess(result);
+      }
       return result;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('An unknown error occurred');
       setError(error);
-      onError?.(error);
+      if (onErrorCallback) {
+        onErrorCallback(error);
+      }
       return null;
     }
-  }, [executeRequest, onSuccess, onError]);
+  }, [executeRequest, onSuccess, onErrorCallback]);
 
   // Function to clear the cache for a specific URL or all URLs
   const clearCache = useCallback((specificUrl?: string) => {

@@ -1,4 +1,5 @@
 // Global type definitions for the application
+import { ReactI18NextChildren } from 'react-i18next';
 
 // Property statistics interface
 export interface PropertyStats {
@@ -9,17 +10,20 @@ export interface PropertyStats {
   [key: string]: number; // For dynamic property access
 }
 
-// Extend Window interface
 declare global {
+  // Extend Window interface
   interface Window {
     __WB_MANIFEST: string[];
     skipWaiting(): void;
+    matchMedia(query: string): MediaQueryList;
+    innerWidth: number;
     location: {
       href: string;
       assign(url: string): void;
     };
   }
 
+  // Extend Document interface
   interface Document {
     body: {
       style: {
