@@ -268,9 +268,15 @@ const Dashboard = () => {
   const filteredProperties = userProperties.filter(property => {
     const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.location.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // If reservedOnly is true, only show reserved properties regardless of status
+    if (reservedOnly) {
+      return matchesSearch && !!property.reserved;
+    }
+    
+    // Otherwise, filter by status (or show all if statusFilter is 'ALL')
     const matchesStatus = statusFilter === "ALL" || property.status === statusFilter;
-    const matchesReserved = reservedOnly ? !!property.reserved : true;
-    return matchesSearch && matchesStatus && matchesReserved;
+    return matchesSearch && matchesStatus;
   });
 
   // Enhanced Property Card Component
