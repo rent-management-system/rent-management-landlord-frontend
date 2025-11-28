@@ -41,15 +41,15 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     const loadTranslations = async () => {
       try {
         const [en, am, om] = await Promise.all([
-          import('../../public/locales/en/translation.json'),
-          import('../../public/locales/am/translation.json'),
-          import('../../public/locales/om/translation.json')
+          fetch('/locales/en/translation.json').then(res => res.json()),
+          fetch('/locales/am/translation.json').then(res => res.json()),
+          fetch('/locales/om/translation.json').then(res => res.json())
         ]);
         
         setTranslations({
-          en: en.default || en,
-          am: am.default || am,
-          om: om.default || om
+          en: en,
+          am: am,
+          om: om
         });
       } catch (error) {
         console.error('Failed to load translations:', error);

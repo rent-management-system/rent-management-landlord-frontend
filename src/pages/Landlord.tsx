@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -301,20 +301,16 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
     Balcony: Building,
   };
 
+  // Import FrontPage component
+  const FrontPage = lazy(() => import('./FrontPage'));
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative py-20 md:py-32 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to Rent Management</h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Manage your properties with ease and efficiency</p>
-            <Button className="bg-white text-blue-700 hover:bg-blue-50 px-8 py-6 text-lg">
-              Get Started
-            </Button>
-          </div>
-        </section>
+        <Suspense fallback={<div>Loading...</div>}>
+          <FrontPage />
+        </Suspense>
         
         {/* Updated How It Works Section */}
         <section className="py-16 bg-muted/30">
