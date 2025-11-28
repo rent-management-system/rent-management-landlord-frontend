@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, lazy, Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -6,58 +6,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Upload, CheckCircle2, Home, MapPin, DollarSign, Bed, Bath, 
-  Square, Wifi, Car, Shield, Dumbbell, Trees, Building
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle2, Home, MapPin, Upload, Bath, Bed, 
+  Square, Car, Shield, Dumbbell, Trees, Building, Wifi, DollarSign
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import "@/style.scss";
 import { useProperties } from "@/hooks/useProperties";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { PropertySubmission } from "@/services/propertyService";
-
-// Animated Counter Component
-const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: number }) => {
-  const [count, setCount] = useState(0);
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    if (!hasAnimated) {
-      let start = 0;
-      const increment = end / (duration / 16);
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= end) {
-          setCount(end);
-          setHasAnimated(true);
-          clearInterval(timer);
-        } else {
-          setCount(Math.floor(start));
-        }
-      }, 16);
-      
-      return () => clearInterval(timer);
-    }
-    return undefined; // Add explicit return for all code paths
-  }, [end, duration, hasAnimated]);
-
-  return (
-    <span className="text-4xl font-bold mb-2 block">
-      {count}+
-    </span>
-  );
-};
-
-
 
 // My Properties card and management moved to Dashboard page
 
 const Landlord = () => {
   const { t } = useTranslation();
-  const { properties, actions } = useProperties();
+  const { actions } = useProperties();
+  const { toast } = useToast();
   
 
   const [formData, setFormData] = useState({
@@ -68,7 +36,7 @@ const Landlord = () => {
     bathrooms: "",
     area: "",
     description: "",
-    house_type: "", // Added house_type
+    house_type: "",
     amenities: {
       WiFi: false,
       Parking: false,
@@ -78,6 +46,12 @@ const Landlord = () => {
       Garden: false,
       Balcony: false,
     },
+    available_from: "",
+    available_to: "",
+    deposit: "",
+    utilities_included: false,
+    pets_allowed: false,
+    furnished: false
   });
 
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
@@ -125,27 +99,51 @@ const Landlord = () => {
 
     // --- FORM VALIDATION ---
     if (!formData.title.trim()) {
-      toast.error("Property title is required.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Property title is required."
+      });
       return;
     }
     if (!formData.location.trim()) {
-      toast.error("Location is required.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Location is required."
+      });
       return;
     }
     if (!formData.house_type) {
-      toast.error("Please select a house type.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a house type."
+      });
       return;
     }
     if (!formData.price || parseFloat(formData.price) <= 0) {
-      toast.error("A valid price is required.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "A valid price is required."
+      });
       return;
     }
     if (!formData.description.trim()) {
-      toast.error("Description is required.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Description is required."
+      });
       return;
     }
     if (uploadedImages.length === 0) {
-      toast.error("At least one photo must be uploaded.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "At least one photo must be uploaded."
+      });
       return;
     }
     // --- END VALIDATION ---
@@ -173,7 +171,10 @@ const Landlord = () => {
       const result = await actions.submitProperty(submissionData);
       
       if (result && result.chapa_tx_ref) {
-        toast.success("Property submitted successfully! Redirecting to payment...");
+        toast({
+          title: "Success",
+          description: "Property updated successfully! Redirecting to payment..."
+        });
         
         // Redirect to Chapa payment URL
         window.location.href = result.chapa_tx_ref;
@@ -197,11 +198,21 @@ const Landlord = () => {
             Garden: false,
             Balcony: false,
           },
+          available_from: "",
+          available_to: "",
+          deposit: "",
+          utilities_included: false,
+          pets_allowed: false,
+          furnished: false,
         });
         setUploadedImages([]);
       } else if (result) {
         // If result is true but chapa_tx_ref is missing, still reset form and refresh properties
-        toast.success("Property submitted successfully! Awaiting payment confirmation.");
+        toast({
+          title: "Success",
+          description: "Property listed successfully!"
+        });
+        // Reset form with all required properties
         setFormData({
           title: "",
           location: "",
@@ -218,8 +229,14 @@ const Landlord = () => {
             Gym: false,
             Pool: false,
             Garden: false,
-            Balcony: false,
+            Balcony: false
           },
+          available_from: "",
+          available_to: "",
+          deposit: "",
+          utilities_included: false,
+          pets_allowed: false,
+          furnished: false
         });
         setUploadedImages([]);
         // Refresh properties if no redirection
