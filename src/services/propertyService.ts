@@ -508,11 +508,38 @@ export const propertyService = {
     });
   },
 
-  // Approve and initiate payment for a PENDING property
-  async approveAndPay(id: string): Promise<ApproveAndPayResponse> {
-    return apiRequest<ApproveAndPayResponse>(`/${id}/approve-and-pay`, {
-      method: 'PATCH',
-    });
+  // Approve and initiate payment for a PENDING property with retry logic
+  async approveAndPay(id: string, retries = 3, delay = 1000): Promise<ApproveAndPayResponse> {
+    const retryWithBackoff = async (attempt: number): Promise<ApproveAndPayResponse> => {
+      try {
+        return await apiRequest<ApproveAndPayResponse>(`${id}/approve-and-pay/`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (error: any) {
+        // If we get a 429 and have retries left, wait and retry
+        if (error.status === 429 && attempt < retries) {
+          const waitTime = delay * Math.pow(2, attempt - 1);
+          console.warn(`Rate limited. Retrying in ${waitTime}ms... (Attempt ${attempt + 1}/${retries})`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          return retryWithBackoff(attempt + 1);
+        }
+        
+        // If we get a 429 but no retries left, provide a more helpful error
+        if (error.status === 429) {
+          const retryAfter = error.response?.headers?.get('Retry-After') || 60; // Default to 60 seconds if no Retry-After header
+          const errorMessage = `Payment service is currently busy. Please try again in ${retryAfter} seconds.`;
+          console.error(errorMessage);
+          toast.error(errorMessage);
+          throw new Error(errorMessage);
+        }
+        
+        // For other errors, just rethrow
+        throw error;
+      }
+    };
+
+    return retryWithBackoff(1);
   },
 
   // Approve a property (owner action)

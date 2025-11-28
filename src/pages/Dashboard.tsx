@@ -23,6 +23,7 @@ import { Property } from "@/services/propertyService";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { toast } from 'sonner';
 import {
   Bed,
   Bath,
@@ -141,13 +142,74 @@ const Dashboard = () => {
 
   const handleApproveAndPay = async () => {
     if (!approveTarget) return;
+    
     setApproveLoading(true);
-    const res = await actions.approveAndPay(approveTarget.id);
-    setApproveLoading(false);
-    if (res && res.checkout_url) {
-      window.location.href = res.checkout_url;
+    
+    try {
+      // Show a loading toast that will be updated with the result
+      const toastId = toast.loading('Processing your payment request...');
+      
+      try {
+        const res = await actions.approveAndPay(approveTarget.id);
+        
+        if (res && res.checkout_url) {
+          // Update the toast to show success
+          toast.success('Redirecting to payment...', { id: toastId });
+          
+          // Store payment details in session storage for after payment
+          const paymentDetails = {
+            propertyId: approveTarget.id,
+            txRef: res.chapa_tx_ref,
+            amount: approveTarget.price,
+            timestamp: new Date().toISOString()
+          };
+          sessionStorage.setItem('lastPayment', JSON.stringify(paymentDetails));
+          
+          // Small delay to let the user see the success message
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Redirect to the payment URL with a return URL
+          const successUrl = new URL('/payment/success', window.location.origin);
+          successUrl.searchParams.append('property_id', approveTarget.id);
+          successUrl.searchParams.append('tx_ref', res.chapa_tx_ref);
+          successUrl.searchParams.append('amount', approveTarget.price.toString());
+          
+          // Update the checkout URL to include the success URL if possible
+          const checkoutUrl = new URL(res.checkout_url);
+          if (!checkoutUrl.searchParams.has('success_url')) {
+            checkoutUrl.searchParams.set('success_url', successUrl.toString());
+          }
+          
+          // Redirect to the payment gateway
+          window.location.href = checkoutUrl.toString();
+        }
+      } catch (error: any) {
+        // Handle rate limiting specifically
+        if (error.message && error.message.includes('Please try again in')) {
+          toast.error(error.message, { 
+            id: toastId,
+            duration: 10000, // Show for 10 seconds
+            action: {
+              label: 'Retry Now',
+              onClick: () => handleApproveAndPay()
+            }
+          });
+        } else {
+          // For other errors, show a generic error message
+          toast.error('Failed to process payment. Please try again later.', { 
+            id: toastId,
+            duration: 5000
+          });
+          console.error('Payment error:', error);
+        }
+        return; // Don't close the dialog on error
+      }
+      
+      // Only close the dialog if we're redirecting to payment
       setApproveOpen(false);
       setApproveTarget(null);
+    } finally {
+      setApproveLoading(false);
     }
   };
 
@@ -233,17 +295,17 @@ const Dashboard = () => {
       const statusConfig = {
         APPROVED: { 
           label: t("approved_status"), 
-          class: "bg-emerald-500/15 text-emerald-700 border-emerald-200 dark:text-emerald-300 dark:border-emerald-800 shadow-sm",
+          class: "bg-emerald-500/90 text-white border-emerald-200 dark:border-emerald-800 shadow-lg",
           icon: CheckCircle2 
         },
         PENDING: { 
           label: t("pending_status"), 
-          class: "bg-amber-500/15 text-amber-700 border-amber-200 dark:text-amber-300 dark:border-amber-800 shadow-sm",
+          class: "bg-amber-500/90 text-white border-amber-200 dark:border-amber-800 shadow-lg",
           icon: Calendar 
         },
         REJECTED: { 
           label: "Rejected", 
-          class: "bg-rose-500/15 text-rose-700 border-rose-200 dark:text-rose-300 dark:border-rose-800 shadow-sm",
+          class: "bg-rose-500/90 text-white border-rose-200 dark:border-rose-800 shadow-lg",
           icon: Trash2 
         },
       } as const;
@@ -252,10 +314,15 @@ const Dashboard = () => {
       const IconComponent = config.icon;
       
       return (
-        <Badge variant="outline" className={`${config.class} font-medium px-3 py-1.5 rounded-full border-2`}>
-          <IconComponent className="h-3 w-3 mr-1.5" />
-          {config.label}
-        </Badge>
+        <div className="relative z-20">
+          <Badge 
+            variant="outline" 
+            className={`${config.class} font-medium px-3 py-1.5 rounded-full border-2 whitespace-nowrap shadow-md`}
+          >
+            <IconComponent className="h-3 w-3 mr-1.5" />
+            {config.label}
+          </Badge>
+        </div>
       );
     };
 
@@ -264,22 +331,27 @@ const Dashboard = () => {
       const map: Record<string, { label: string; className: string }> = {
         SUCCESS: { 
           label: t('payment_success') || 'Paid', 
-          className: 'bg-emerald-500/15 text-emerald-700 border-emerald-200 dark:text-emerald-300 dark:border-emerald-800 shadow-sm' 
+          className: 'bg-emerald-500/90 text-white border-emerald-200 dark:text-white dark:border-emerald-800 shadow-lg' 
         },
         PENDING: { 
           label: t('payment_pending') || 'Payment Pending', 
-          className: 'bg-amber-500/15 text-amber-700 border-amber-200 dark:text-amber-300 dark:border-amber-800 shadow-sm' 
+          className: 'bg-amber-500/90 text-white border-amber-200 dark:text-white dark:border-amber-800 shadow-lg' 
         },
         FAILED: { 
           label: t('payment_failed') || 'Payment Failed', 
-          className: 'bg-rose-500/15 text-rose-700 border-rose-200 dark:text-rose-300 dark:border-rose-800 shadow-sm' 
+          className: 'bg-rose-500/90 text-white border-rose-200 dark:text-white dark:border-rose-800 shadow-lg' 
         },
       };
       const item = map[payment] ?? map.PENDING;
       return (
-        <Badge variant="outline" className={`${item.className} font-medium px-3 py-1.5 rounded-full border-2`}>
-          {item.label}
-        </Badge>
+        <div className="relative z-20">
+          <Badge 
+            variant="outline" 
+            className={`${item.className} font-medium px-3 py-1.5 rounded-full border-2 whitespace-nowrap shadow-md`}
+          >
+            {item.label}
+          </Badge>
+        </div>
       );
     };
 
@@ -305,9 +377,13 @@ const Dashboard = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           {/* Status and Payment Badges */}
-          <div className="absolute top-4 left-4 flex flex-col gap-2 items-start">
-            {getStatusBadge(property.status)}
-            {getPaymentBadge(property.payment_status)}
+          <div className="absolute top-4 left-4 flex flex-col gap-2 items-start z-10">
+            <div className="relative">
+              {getStatusBadge(property.status)}
+            </div>
+            <div className="relative">
+              {getPaymentBadge(property.payment_status)}
+            </div>
           </div>
 
           {/* Reserved Badge */}

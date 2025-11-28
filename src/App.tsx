@@ -14,6 +14,7 @@ const Landlord = lazy(() => import('./pages/Landlord'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
 const AuthCallbackWithLogs = lazy(() => import('./components/AuthCallbackRedirect'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Configure React Query with performance optimizations
@@ -57,6 +58,11 @@ const App = () => {
                   </Suspense>
                 } />
                 <Route path="/auth/callback" element={<AuthCallbackWithLogs />} />
+                <Route path="/payment/success" element={
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PaymentSuccess />
+                  </Suspense>
+                } />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
