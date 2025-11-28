@@ -50,6 +50,7 @@ import {
   Edit,
   Crown,
   CreditCard,
+  Calendar,
 } from "lucide-react";
 
 const Dashboard = () => {

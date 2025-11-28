@@ -317,7 +317,16 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-          <FrontPage />
+        {/* Hero Section */}
+        <section className="relative py-20 md:py-32 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to Rent Management</h1>
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Manage your properties with ease and efficiency</p>
+            <Button className="bg-white text-blue-700 hover:bg-blue-50 px-8 py-6 text-lg">
+              Get Started
+            </Button>
+          </div>
+        </section>
         
         {/* Updated How It Works Section */}
         <section className="py-16 bg-muted/30">

@@ -1,6 +1,6 @@
 // API Service for Property Listing Backend - CORS FIXED VERSION
 import { toast } from 'sonner';
-import { useState, useEffect, useCallback } from 'react'; // Added useState and useEffect for useApi hook
+import { useState, useCallback } from 'react'; // Added useState for useApi hook
 
 // Types (keep your existing types)
 export interface PropertySubmission {
