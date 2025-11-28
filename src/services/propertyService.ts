@@ -512,7 +512,7 @@ export const propertyService = {
   async approveAndPay(id: string, retries = 3, delay = 1000): Promise<ApproveAndPayResponse> {
     const retryWithBackoff = async (attempt: number): Promise<ApproveAndPayResponse> => {
       try {
-        return await apiRequest<ApproveAndPayResponse>(`${id}/approve-and-pay/`, {
+        return await apiRequest<ApproveAndPayResponse>(`/${id}/approve-and-pay/`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
         });
