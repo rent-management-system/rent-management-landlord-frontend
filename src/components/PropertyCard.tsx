@@ -39,12 +39,6 @@ const PropertyCard = ({
 }: PropertyCardProps) => {
   const { t } = useTranslation();
   
-  const statusColors = {
-    APPROVED: "success",
-    PENDING: "warning",
-    REJECTED: "destructive",
-  } as const;
-
   const amenityIcons: Record<string, React.ElementType> = {
     WiFi: Wifi,
     Parking: Car,

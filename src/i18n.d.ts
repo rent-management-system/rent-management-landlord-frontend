@@ -1,13 +1,22 @@
-// Type declarations for i18n.js
-declare module '*/i18n.js' {
-  interface I18nInstance {
-    // Add specific methods and properties used from i18n
-    t: (key: string, options?: Record<string, any>) => string;
-    changeLanguage: (lng: string) => Promise<any>;
-    language: string;
-    // Add other i18n methods as needed
-  }
+import { i18n as I18n } from 'i18next';
 
-  const i18n: I18nInstance;
+declare module 'i18next' {
+  interface CustomTypeOptions {
+    defaultNS: 'translation';
+    resources: {
+      translation: {
+        [key: string]: string | { [key: string]: any };
+      };
+    };
+  }
+}
+
+// This is a workaround to make TypeScript treat the i18n.js file as a module
+declare module 'i18next' {
+  const i18n: I18n;
   export default i18n;
 }
+
+// This is needed for the actual i18n instance
+declare const i18n: I18n;
+export default i18n;

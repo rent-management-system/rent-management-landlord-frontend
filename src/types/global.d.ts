@@ -25,6 +25,8 @@ declare global {
 
   // Extend Document interface
   interface Document {
+    cookie: string;
+    getElementById(elementId: string): HTMLElement | null;
     body: {
       style: {
         overflow: string;
@@ -32,10 +34,39 @@ declare global {
     };
   }
 
-  interface HTMLSelectElement {
+  // Extend HTML elements
+  interface HTMLInputElement {
+    name: string;
     value: string;
+    files: FileList | null;
+  }
+
+  interface HTMLTextAreaElement {
+    name: string;
+    value: string;
+  }
+
+  interface HTMLTableCellElement extends HTMLElement {}
+  interface HTMLTableCaptionElement extends HTMLElement {}
+
+  // Extend Event interfaces
+  interface KeyboardEvent {
+    key: string;
+    metaKey: boolean;
+    ctrlKey: boolean;
+  }
+
+  interface EventTarget {
+    name?: string;
+    value?: string;
+    files?: FileList;
+  }
+
+  interface HTMLSelectElement extends HTMLElement {
     selectedIndex: number;
     options: HTMLOptionsCollection;
+    value: string;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
   }
 
   // Basic type definitions
