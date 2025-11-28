@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { LanguageProvider } from "./contexts/LanguageContext";
 // Temporarily disable useApiTest to prevent potential performance impact
 // import { useApiTest } from "./utils/apiTest";
 import LoadingSpinner from "@/components/ui/loading-spinner";
@@ -42,33 +43,26 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ErrorBoundary>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Landlord />} />
-                <Route path="/landlord" element={<Landlord />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/properties/:id" element={
-                  <Suspense fallback={<LoadingFallback />}>
-                    <PropertyDetails />
-                  </Suspense>
-                } />
-                <Route path="/auth/callback" element={<AuthCallbackWithLogs />} />
-                <Route path="/payment/success" element={
-                  <Suspense fallback={<LoadingFallback />}>
-                    <PaymentSuccess />
-                  </Suspense>
-                } />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </ErrorBoundary>
-      </TooltipProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <ErrorBoundary>
+            <Toaster />
+            <Sonner position="top-center" />
+            <BrowserRouter>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  <Route path="/" element={<Landlord />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/property/:id" element={<PropertyDetails />} />
+                  <Route path="/auth/callback" element={<AuthCallbackWithLogs />} />
+                  <Route path="/payment/success" element={<PaymentSuccess />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </ErrorBoundary>
+        </TooltipProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 };

@@ -14,14 +14,15 @@
       "./src/types"
     ],
     "types": ["vite/client", "node"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     
     /* JSX */
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
     
     /* Module Resolution */
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     
