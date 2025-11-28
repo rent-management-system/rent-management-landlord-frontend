@@ -370,20 +370,6 @@ const Landlord = () => {
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                   Reach thousands of potential tenants by listing your property on our platform. Fill in the details below to get started.
                 </p>
-                <div className="mt-6 flex justify-center gap-4">
-                  <a 
-                    href="#create-listing" 
-                    className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                  >
-                    List Your Property
-                  </a>
-                  <a 
-                    href="#contact-us" 
-                    className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                  >
-                    Contact Us
-                  </a>
-                </div>
               </div>
 
               <Card className="shadow-2xl border-0 bg-background/80 backdrop-blur-sm">

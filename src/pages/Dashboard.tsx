@@ -260,15 +260,18 @@ const Dashboard = () => {
     const matchesSearch = property.title?.toLowerCase().includes(searchLower) ||
       property.location?.toLowerCase().includes(searchLower);
     
-    // Check reserved status if reservedOnly filter is active
+    // Check if property is reserved
     const isReserved = property.status === 'RESERVED' || property.reserved === true;
-    const matchesReserved = !reservedOnly || isReserved;
     
-    // Check status filter (only if not filtering by reserved)
-    const matchesStatus = statusFilter === "ALL" || 
-                         (reservedOnly ? isReserved : property.status === statusFilter);
+    // If reservedOnly filter is active, only show reserved properties
+    if (reservedOnly) {
+      return isReserved && matchesSearch;
+    }
     
-    return matchesSearch && matchesStatus && matchesReserved;
+    // Otherwise, apply status filter
+    const matchesStatus = statusFilter === "ALL" || property.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
   });
 
   // Enhanced Property Card Component
@@ -300,6 +303,11 @@ const Dashboard = () => {
           label: t("pending_status"), 
           class: "bg-amber-500/90 text-white border-amber-200 dark:border-amber-800 shadow-lg",
           icon: Calendar 
+        },
+        RESERVED: {
+          label: t("reserved_status") || "Reserved",
+          class: "bg-purple-500/90 text-white border-purple-200 dark:border-purple-800 shadow-lg",
+          icon: CheckCircle2
         },
         REJECTED: { 
           label: "Rejected", 
@@ -377,22 +385,12 @@ const Dashboard = () => {
           {/* Status and Payment Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 items-start z-10">
             <div className="relative">
-              {getStatusBadge(property.status)}
+              {property.reserved ? getStatusBadge('RESERVED') : getStatusBadge(property.status)}
             </div>
             <div className="relative">
               {getPaymentBadge(property.payment_status)}
             </div>
           </div>
-
-          {/* Reserved Badge */}
-          {property.reserved && (
-            <div className="absolute top-4 right-4">
-              <Badge className="bg-purple-500/90 text-white border-0 px-3 py-1.5 rounded-full shadow-lg">
-                <Star className="h-3 w-3 mr-1.5 fill-current" />
-                {t('reserved') || 'Reserved'}
-              </Badge>
-            </div>
-          )}
 
           {/* View Count */}
           <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-black/70 text-white px-3 py-1.5 rounded-full text-sm backdrop-blur-sm">

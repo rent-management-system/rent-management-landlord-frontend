@@ -11,6 +11,12 @@ import {
 import { useTranslation } from "react-i18next";
 
 // Extend the global Window and Document interfaces
+type ScrollIntoViewOptions = {
+  behavior?: 'auto' | 'smooth';
+  block?: 'start' | 'center' | 'end' | 'nearest';
+  inline?: 'start' | 'center' | 'end' | 'nearest';
+};
+
 declare global {
   interface Window {
     location: {
@@ -100,13 +106,26 @@ const Header: React.FC = () => {
         >
           {t("dashboard")}
         </Link>
-        <Link
-          to="/landlord#create-listing"
+        <a
+          href="/landlord#create-listing"
           className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
-          onClick={closeNav}
+          onClick={(e) => {
+            e.preventDefault();
+            closeNav();
+            navigate('/landlord');
+            // Scroll to the section after navigation
+            setTimeout(() => {
+              const element = document.getElementById('create-listing');
+              if (element) {
+                (element as unknown as { scrollIntoView: (options?: ScrollIntoViewOptions) => void }).scrollIntoView({ 
+                  behavior: 'smooth' 
+                });
+              }
+            }, 100);
+          }}
         >
           {t("properties")}
-        </Link>
+        </a>
         <li className="nav-item">
           <Link 
             className="nav-link text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer" 
