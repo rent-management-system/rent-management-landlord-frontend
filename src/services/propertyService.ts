@@ -214,7 +214,7 @@ const apiRequest = async <T>(
     sessionStorage.removeItem('authToken');
     sessionStorage.removeItem('access_token');
     toast.error('Session expired. Please log in again.');
-    setTimeout(() => (window.location.href = '/login'), 1500);
+    setTimeout(() => (window.location.href = 'https://rental-user-management-frontend-sigma.vercel.app/'), 1500);
     throw new Error('Authentication failed. Please log in again.');
   }
   
@@ -286,6 +286,7 @@ const apiRequest = async <T>(
         localStorage.removeItem('access_token');
         sessionStorage.removeItem('authToken');
         sessionStorage.removeItem('access_token');
+        setTimeout(() => (window.location.href = 'https://rental-user-management-frontend-sigma.vercel.app/'), 1500);
       }
       
       throw new Error(errorMessage);
@@ -310,7 +311,7 @@ const apiRequest = async <T>(
     if (error instanceof Error) {
       if (error.message.includes('Authentication failed')) {
         toast.error('Session expired. Please log in again.');
-        setTimeout(() => window.location.href = '/login', 2000);
+        setTimeout(() => window.location.href = 'https://rental-user-management-frontend-sigma.vercel.app/', 2000);
       }
       throw error;
     }

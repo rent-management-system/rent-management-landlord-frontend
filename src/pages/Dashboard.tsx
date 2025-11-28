@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PropertyDetailsModal } from "@/components/PropertyDetailsModal";
+// PropertyDetailsModal import removed as it's not being used
 import {
   AlertDialog,
   AlertDialogAction,
@@ -91,20 +91,20 @@ const Dashboard = () => {
 
   // Calculate dashboard metrics
   const dashboardMetrics = useMemo(() => {
-    // Prefer user-specific properties; if empty (e.g., dev auth), fall back to public approved properties
-    const source = userProperties && userProperties.length > 0 ? userProperties : properties;
+    // Use userProperties as the source
+    const source = userProperties || [];
 
     const totalProperties = source.length;
-    const approvedProperties = source.filter(p => p.status === 'APPROVED').length;
-    const pendingProperties = source.filter(p => p.status === 'PENDING').length;
-    const totalViews = source.reduce((sum, prop) => sum + (prop.views || 0), 0);
+    const approvedProperties = source.filter((p: Property) => p.status === 'APPROVED').length;
+    const pendingProperties = source.filter((p: Property) => p.status === 'PENDING').length;
+    const totalViews = source.reduce((sum: number, prop: Property) => sum + (prop.views || 0), 0);
     const totalRevenue = source
-      .filter(p => p.status === 'APPROVED')
-      .reduce((sum, prop) => sum + (prop.price || 0), 0);
-    const reservedProperties = source.filter(p => p.reserved).length;
+      .filter((p: Property) => p.status === 'APPROVED')
+      .reduce((sum: number, prop: Property) => sum + (prop.price || 0), 0);
+    const reservedProperties = source.filter((p: Property) => p.reserved).length;
     const reservedViewsTotal = source
-      .filter(p => p.reserved)
-      .reduce((sum, p) => sum + (p.views || 0), 0);
+      .filter((p: Property) => p.reserved)
+      .reduce((sum: number, p: Property) => sum + (p.views || 0), 0);
     const reservedAverageViews = reservedProperties > 0
       ? Math.round(reservedViewsTotal / reservedProperties)
       : 0;
@@ -121,7 +121,7 @@ const Dashboard = () => {
       reservedViewsTotal,
       reservedAverageViews,
     };
-  }, [userProperties, properties]);
+  }, [userProperties]);
 
   const amenitiesIcons = {
     WiFi: Wifi,
@@ -212,7 +212,7 @@ const Dashboard = () => {
   };
 
   const openEdit = (property: Property) => {
-    setSelectedProperty(property);
+    setEditingProperty(property);
     setEditOpen(true);
   };
 
