@@ -14,18 +14,6 @@ import {
   Upload, CheckCircle2, Home, MapPin, DollarSign, Bed, Bath, 
   Square, Wifi, Car, Shield, Dumbbell, Trees, Building
 } from "lucide-react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next";
 import "@/style.scss";
 import { useProperties } from "@/hooks/useProperties";
