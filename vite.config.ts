@@ -17,9 +17,16 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            react: ['react', 'react-dom', 'react-router-dom'],
-            vendor: ['@radix-ui/react-*', 'lucide-react'],
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('@radix-ui/')) {
+                return 'radix';
+              }
+              if (id.includes('lucide-react')) {
+                return 'lucide';
+              }
+              return 'vendor';
+            }
           },
         },
       },
