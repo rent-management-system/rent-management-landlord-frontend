@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import { VitePWA } from "vite-plugin-pwa";
 import { compression } from "vite-plugin-compression2";
@@ -14,8 +14,28 @@ export default defineConfig(({ mode }) => {
       host: "::",
       port: 8080,
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+            vendor: ['@radix-ui/react-*', 'lucide-react'],
+          },
+        },
+      },
+      commonjsOptions: {
+        include: [/node_modules/],
+      },
+      sourcemap: true,
+      chunkSizeWarningLimit: 1000,
+    },
     plugins: [
-      react(),
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin']
+        }
+      }),
       isProduction && visualizer({
         open: true,
         filename: 'bundle-analyzer.html',
@@ -64,36 +84,9 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    build: {
-      sourcemap: !isProduction,
-      minify: isProduction ? 'esbuild' : false,
-      rollupOptions: {
-        output: {
-          manualChunks: (id) => {
-            if (id.includes('node_modules')) {
-              if (id.includes('@radix-ui')) {
-                return 'radix-ui';
-              }
-              if (id.includes('@tanstack') || id.includes('react-query')) {
-                return 'react-query';
-              }
-              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-                return 'react-vendor';
-              }
-              if (id.includes('i18next')) {
-                return 'i18n';
-              }
-              return 'vendor';
-            }
-          },
-        },
-      },
-      chunkSizeWarningLimit: 1000,
-    },
     optimizeDeps: {
       include: ['react', 'react-dom'],
       esbuildOptions: {
-        // Enable esbuild's tree shaking
         treeShaking: true,
       },
     },
