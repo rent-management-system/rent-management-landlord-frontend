@@ -6,9 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PropertyDetailsModal } from "@/components/PropertyDetailsModal";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,7 +58,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   // Real data via hook
-  const { properties, userProperties, loading, actions, metrics } = useProperties();
+  const { userProperties, loading, actions, metrics } = useProperties();
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,8 +68,7 @@ const Dashboard = () => {
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
   const [editSubmitting, setEditSubmitting] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
-  const [viewingProperty, setViewingProperty] = useState<Property | null>(null);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [editData, setEditData] = useState({
     title: "",
     description: "",
@@ -231,14 +229,14 @@ const Dashboard = () => {
 
   const submitEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editTarget) return;
+    if (!editingProperty) return;
     const priceNum = parseFloat(editData.price);
     const amenities = Object.entries(editData.amenities)
       .filter(([_, v]) => v)
       .map(([k]) => k);
 
     setEditSubmitting(true);
-    const res = await actions.updateProperty(editTarget.id, {
+    const res = await actions.updateProperty(editingProperty.id, {
       title: editData.title,
       description: editData.description,
       price: priceNum,
@@ -247,7 +245,7 @@ const Dashboard = () => {
     setEditSubmitting(false);
     if (res) {
       setEditOpen(false);
-      setEditTarget(null);
+      setEditingProperty(null);
     }
   };
 
@@ -871,7 +869,10 @@ const Dashboard = () => {
                     key={property.id}
                     property={property}
                     onEdit={() => openEdit(property)}
-                    onViewDetails={() => openViewDetails(property)}
+                    onViewDetails={() => {
+                      // View details implementation
+                      console.log('Viewing property:', property);
+                    }}
                     onApprove={() => openApproveDialog(property)}
                     onDelete={() => actions.deleteProperty(property.id)}
                     onToggleReserve={() => actions.reserveProperty(property.id, !(property.reserved ?? false))}
