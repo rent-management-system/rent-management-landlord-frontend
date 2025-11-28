@@ -94,24 +94,19 @@ const Header: React.FC = () => {
         >
           {t("home")}
         </Link>
-        <a
-          href="https://rent-management-system-tau.vercel.app/#about"
+        <Link 
+          to="/dashboard"
           className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
         >
-          {t("about")}
-        </a>
-        <a
-          href="https://rent-management-system-tau.vercel.app/#product"
+          {t("dashboard")}
+        </Link>
+        <Link
+          to="/landlord#create-listing"
           className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
+          onClick={closeNav}
         >
           {t("properties")}
-        </a>
-        <a
-          href="https://rent-management-system-tau.vercel.app/#testimonials"
-          className="text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer"
-        >
-          {t("testimonials")}
-        </a>
+        </Link>
         <li className="nav-item">
           <Link 
             className="nav-link text-md mr-2 text-[18px] transition-transform duration-200 hover:scale-105 hover:text-primary cursor-pointer" 
@@ -302,31 +297,22 @@ const Header: React.FC = () => {
             </Link>
           </li>
           <li className="li li2" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
-            <a 
-              href="https://rent-management-system-tau.vercel.app/#about" 
+            <Link 
+              to="/dashboard"
               onClick={closeNav}
               style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
             >
-              {t("about")}
-            </a>
+              {t("dashboard")}
+            </Link>
           </li>
           <li className="li li3" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
-            <a 
-              href="https://rent-management-system-tau.vercel.app/#product" 
+            <Link 
+              to="/landlord#create-listing"
               onClick={closeNav}
               style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
             >
               {t("properties")}
-            </a>
-          </li>
-          <li className="li li4" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
-            <a 
-              href="https://rent-management-system-tau.vercel.app/#testimonials" 
-              onClick={closeNav}
-              style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
-            >
-              {t("testimonials")}
-            </a>
+            </Link>
           </li>
           
           {/* Dashboard Link */}

@@ -693,15 +693,6 @@ const Dashboard = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button 
-                  className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
-                  onClick={() => navigate('/landlord#create-listing')}
-                >
-                  <Plus className="h-4 w-4" /> 
-                  {t("new_listing") || "New Listing"}
-                </Button>
-              </div>
             </div>
 
             {/* Enhanced Stats Grid */}

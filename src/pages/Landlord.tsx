@@ -59,13 +59,6 @@ const Landlord = () => {
   const { t } = useTranslation();
   const { properties, actions } = useProperties();
   
-  // Metrics for the dashboard
-  const metrics = {
-    total_listings: properties.length,
-    pending: properties.filter(p => p.status === 'PENDING').length,
-    approved: properties.filter(p => p.status === 'APPROVED').length,
-    rejected: properties.filter(p => p.status === 'REJECTED').length
-  };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -239,57 +232,6 @@ const Landlord = () => {
     }
   };
 
-// Stats Section Component
-const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending: number; approved: number; rejected: number } | null }) => {
-  const { t } = useTranslation();
-  
-  return (
-    <section className="py-16 bg-gradient-to-br from-background to-muted/50">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          {/* Total Listings */}
-          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-            <div className="relative inline-block">
-              <AnimatedCounter 
-                end={metrics?.total_listings || 0} 
-                duration={2500} 
-              />
-            </div>
-            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-              {t("total_listings")}
-            </p>
-          </div>
-
-          {/* Approved Listings */}
-          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-            <div className="relative inline-block">
-              <AnimatedCounter 
-                end={metrics?.approved || 0} 
-                duration={3000} 
-              />
-            </div>
-            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-              {t("approved_listings")}
-            </p>
-          </div>
-
-          {/* Pending Listings */}
-          <div className="group p-6 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-white/5">
-            <div className="relative inline-block">
-              <AnimatedCounter 
-                end={metrics?.pending || 0} 
-                duration={1500} 
-              />
-            </div>
-            <p className="text-muted-foreground text-lg font-medium transition-colors group-hover:text-foreground">
-              {t("pending_listings")}
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
   const amenitiesIcons = {
     WiFi: Wifi,
@@ -307,13 +249,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 py-12 px-4 md:px-8 lg:px-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">{t('listPropertyTitle')}</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            {t('listPropertyDescription')}
-          </p>
-        </div>
+      <main className="flex-1 px-4 md:px-8 lg:px-16">
         <Suspense fallback={<div>Loading...</div>}>
           <FrontPage />
         </Suspense>
@@ -322,7 +258,7 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
         <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="step-main-cont1 text-center mb-12">
-              <p className="text-lg text-muted-foreground mb-2">{t("how_it_works")}</p>
+              <p className="text-lg font-bold text-black mb-2">{t("how_it_works")}</p>
               <div className="flex justify-center mb-4">
                 <img src="/hr.svg" alt="divider" className="h-1" />
               </div>
@@ -331,10 +267,15 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
 
             <div className="step-main-cont2 grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {/* Step 1 */}
-              <Card className="text-center" aria-labelledby="step1-title">
+              <Card className="text-center hover:shadow-lg transition-all duration-300" aria-labelledby="step1-title">
                 <CardHeader>
-                  <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center" aria-hidden="true">
-                    <i className="fa-solid fa-right-to-bracket fa-xl text-primary" title="Login"></i>
+                  <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center hover:bg-primary/20 transition-colors duration-300" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
+                      <path d="M15.5 3a2.5 2.5 0 0 1 0 5l-.5 0h-10a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-12a1 1 0 0 0-1-1l-.5 0a2.5 2.5 0 0 1-2.5-2.5V3Z"></path>
+                      <path d="M8 12h.01"></path>
+                      <path d="M12 12h.01"></path>
+                      <path d="M16 12h.01"></path>
+                    </svg>
                   </div>
                   <CardTitle id="step1-title" className="text-xl">{t("login_and_search")}</CardTitle>
                 </CardHeader>
@@ -346,10 +287,13 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
               </Card>
 
               {/* Step 2 */}
-              <Card className="text-center" aria-labelledby="step2-title">
+              <Card className="text-center hover:shadow-lg transition-all duration-300" aria-labelledby="step2-title">
                 <CardHeader>
-                  <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center" aria-hidden="true">
-                    <i className="fa-solid fa-phone fa-xl text-primary" title="Contact Owner / Apply"></i>
+                  <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center hover:bg-primary/20 transition-colors duration-300" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                      <path d="M17 16.5a1 1 0 0 1-1-1v-1.2a1 1 0 0 1 .3-.7l1.4-1.4a1 1 0 0 0 .3-.7V8.5a1 1 0 0 0-1-1h-2.6a1 1 0 0 0-.7.3l-1.4 1.4a1 1 0 0 1-.7.3h-1.2a1 1 0 0 0-1 1v3.4a1 1 0 0 0 1 1h.3l.7.7a1 1 0 0 1 .3.7v1.2a1 1 0 0 0 1 1h3.4a1 1 0 0 0 .7-.3l.7-.7a1 1 0 0 1 .7-.3z"></path>
+                    </svg>
                   </div>
                   <CardTitle id="step2-title" className="text-xl">{t("contact_owner_and_apply")}</CardTitle>
                 </CardHeader>
@@ -361,10 +305,17 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
               </Card>
 
               {/* Step 3 */}
-              <Card className="text-center" aria-labelledby="step3-title">
+              <Card className="text-center hover:shadow-lg transition-all duration-300" aria-labelledby="step3-title">
                 <CardHeader>
-                  <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center" aria-hidden="true">
-                    <i className="fa-solid fa-house-chimney-crack fa-xl text-primary" title="Move In"></i>
+                  <div className="icon-wrap mx-auto mb-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center hover:bg-primary/20 transition-colors duration-300" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
+                      <path d="M2 22h20"></path>
+                      <path d="M3.77 10.77 2 13l3.5 3.5 7.5-7.5 4.5 4.5 5-5"></path>
+                      <path d="M12 2v16"></path>
+                      <path d="M2 2h4v4H2z"></path>
+                      <path d="M18 2h4v4h-4z"></path>
+                      <path d="M2 18h4v4H2z"></path>
+                    </svg>
                   </div>
                   <CardTitle id="step3-title" className="text-xl">{t("move_in_and_settle")}</CardTitle>
                 </CardHeader>
@@ -377,9 +328,6 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
             </div>
           </div>
         </section>
-
-        {/* Stats Section with real data */}
-        <StatsSection metrics={metrics} />
 
         {/* Enhanced Create Property Listing Form */}
         <section id="create-listing" className="py-16 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-gray-900/50 dark:to-gray-800/30">
