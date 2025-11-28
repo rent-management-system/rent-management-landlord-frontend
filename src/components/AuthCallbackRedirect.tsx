@@ -2,6 +2,14 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+// Helper function to get auth token from any available storage
+const getAuthToken = (): string | null => {
+  return localStorage.getItem('authToken') || 
+         localStorage.getItem('access_token') ||
+         sessionStorage.getItem('authToken') ||
+         sessionStorage.getItem('access_token');
+};
+
 const AuthCallback = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -20,12 +28,32 @@ const AuthCallback = () => {
 
     if (token) {
       try {
-        // Store token
-        localStorage.setItem("authToken", token);
-        console.log("✅ Token stored in localStorage successfully");
+        // Store token in both localStorage and sessionStorage for redundancy
+        const storageTypes = [localStorage, sessionStorage];
+        let storageSuccess = true;
         
-        // Verify storage
-        const storedToken = localStorage.getItem("authToken");
+        // Store in all available storage types
+        storageTypes.forEach((storage) => {
+          try {
+            storage.setItem("authToken", token);
+            storage.setItem("access_token", token); // For backward compatibility
+            console.log(`✅ Token stored in ${storage === localStorage ? 'localStorage' : 'sessionStorage'} successfully`);
+          } catch (e) {
+            console.warn(`⚠️ Could not store token in ${storage === localStorage ? 'localStorage' : 'sessionStorage'}:`, e);
+            storageSuccess = false;
+          }
+        });
+        
+        if (!storageSuccess) {
+          console.warn("⚠️ Some storage operations failed, but continuing with available storage");
+        }
+        
+        // Verify at least one storage method worked
+        const storedToken = getAuthToken();
+        if (!storedToken) {
+          throw new Error("Failed to store token in any available storage");
+        }
+        
         console.log("🔒 Verified stored token:", storedToken ? "Present" : "Missing");
         
         setStatus("success");
@@ -33,8 +61,8 @@ const AuthCallback = () => {
         
         // Small delay to show success message
         setTimeout(() => {
-          console.log("🔄 Redirecting to /landlord...");
-          navigate("/landlord", { replace: true });
+          console.log("🔄 Redirecting to /...");
+          navigate("/", { replace: true });
         }, 1000);
         
       } catch (error) {
