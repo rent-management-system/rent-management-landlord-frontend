@@ -1,20 +1,43 @@
+import { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Landlord from "./pages/Landlord";
-import NotFound from "./pages/NotFound";
-import AuthCallbackWithLogs from "./components/AuthCallbackRedirect";
-import { useApiTest } from "./utils/apiTest"; // Import useApiTest
-import PropertyDetails from "./pages/PropertyDetails";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import Dashboard from "./pages/Dashboard";
+// Temporarily disable useApiTest to prevent potential performance impact
+// import { useApiTest } from "./utils/apiTest";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 
-const queryClient = new QueryClient();
+// Lazy load components
+const Landlord = lazy(() => import('./pages/Landlord'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
+const AuthCallbackWithLogs = lazy(() => import('./components/AuthCallbackRedirect'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+// Configure React Query with performance optimizations
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime in v5)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+// Loading component for Suspense fallback
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <LoadingSpinner size="lg" />
+  </div>
+);
 
 const App = () => {
-  useApiTest(); // Call the hook here
+  // Temporarily disabled for performance testing
+  // useApiTest();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -23,15 +46,20 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Landlord />} />
-              <Route path="/landlord" element={<Landlord />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/properties/:id" element={<PropertyDetails />} />
-              <Route path="/auth/callback" element={<AuthCallbackWithLogs />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Landlord />} />
+                <Route path="/landlord" element={<Landlord />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/properties/:id" element={
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PropertyDetails />
+                  </Suspense>
+                } />
+                <Route path="/auth/callback" element={<AuthCallbackWithLogs />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </ErrorBoundary>
       </TooltipProvider>

@@ -1,21 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { propertyService, Property, PropertySubmission, PropertyResponse, UpdatePropertyPayload, ApproveAndPayResponse } from '@/services/propertyService';
 import { useApi } from '@/services/propertyService';
+import type { PropertyStats } from '@/types/global';
 
 export const useProperties = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [userProperties, setUserProperties] = useState<Property[]>([]);
-  const [metrics, setMetrics] = useState<{
-    total_listings: number;
-    pending: number;
-    approved: number;
-    rejected: number;
-  } | null>(null);
+  const [metrics, setMetrics] = useState<PropertyStats | null>(null);
   
   const { execute, loading, error } = useApi();
 
   // Load all properties with error handling
-  const loadProperties = useCallback(async (filters?: Parameters<typeof propertyService.getProperties>[0]) => {
+  const loadProperties = useCallback(async (filters?: Record<string, any>) => {
     return execute(() => propertyService.getProperties(filters), {
       onSuccess: (data) => {
         if (data) setProperties(data);

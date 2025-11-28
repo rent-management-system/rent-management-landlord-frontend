@@ -305,10 +305,57 @@ const Header: React.FC = () => {
               {t("testimonials")}
             </a>
           </li>
-          <li className="nav-item" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px" }}>
-            <Link 
-              className="nav-link" 
-              to="/contact"
+          
+          {/* Dashboard Link */}
+          <li className="li li-dashboard" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
+            <a 
+              href="/dashboard" 
+              onClick={(e) => {
+                e.preventDefault();
+                closeNav();
+                handleDashboard();
+              }}
+              style={{ 
+                textDecoration: "none", 
+                color: "#d8ccccfc", 
+                whiteSpace: "normal", 
+                overflowWrap: "break-word",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem"
+              }}
+            >
+              <LayoutDashboard size={20} />
+              {t("dashboard")}
+            </a>
+          </li>
+          
+          {/* Logout Button */}
+          <li className="li li-logout" style={{ listStyle: "none", fontSize: "24px", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
+            <button
+              onClick={() => {
+                closeNav();
+                handleLogout();
+              }}
+              style={{ 
+                background: "none",
+                border: "none",
+                color: "#ff6b6b",
+                padding: 0,
+                fontSize: "24px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem"
+              }}
+            >
+              <LogOut size={20} />
+              {t("logout")}
+            </button>
+          </li>
+          <li className="li li5" style={{ listStyle: "none", fontSize: "24px", color: "#fff", lineHeight: "2.2", textTransform: "uppercase", letterSpacing: "1.7px", cursor: "pointer" }}>
+            <a 
+              href="https://rent-management-system-tau.vercel.app/contact" 
               onClick={closeNav}
               style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
             >
