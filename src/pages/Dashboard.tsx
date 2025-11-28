@@ -250,17 +250,17 @@ const Dashboard = () => {
   };
 
   const filteredProperties = userProperties.filter(property => {
+    // First check search term match
     const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.location.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // If reservedOnly is true, only show reserved properties regardless of status
-    if (reservedOnly) {
-      return matchesSearch && !!property.reserved;
-    }
+    // Check reserved status if reservedOnly is true
+    const matchesReserved = !reservedOnly || property.reserved === true;
     
-    // Otherwise, filter by status (or show all if statusFilter is 'ALL')
+    // Check status filter
     const matchesStatus = statusFilter === "ALL" || property.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    
+    return matchesSearch && matchesStatus && matchesReserved;
   });
 
   // Enhanced Property Card Component
@@ -800,10 +800,16 @@ const Dashboard = () => {
                       <Button
                         variant={reservedOnly ? "default" : "outline"}
                         size="lg"
-                        onClick={() => setReservedOnly(prev => !prev)}
+                        onClick={() => {
+                          setReservedOnly(prev => !prev);
+                          // Reset status filter when toggling reserved
+                          if (!reservedOnly) {
+                            setStatusFilter("ALL");
+                          }
+                        }}
                         className="rounded-2xl border-2 gap-2"
                       >
-                        <Star className="h-4 w-4" /> {t("reserved")}
+                        <Star className="h-4 w-4" /> {t("reserved")} {reservedOnly && `(${userProperties.filter(p => p.reserved).length})`}
                       </Button>
                     </div>
                   </div>
