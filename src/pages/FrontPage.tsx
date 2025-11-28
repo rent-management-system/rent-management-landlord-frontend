@@ -1,8 +1,8 @@
 // import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/contexts/LanguageContext";
 import heroimg from "../assets/hero-imag.png";
 const FrontPage = () => {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   return (
     <div className="front md:h-screen mt-24 md:mt-0   flex flex-col-reverse md:flex-row">
     
@@ -12,7 +12,7 @@ const FrontPage = () => {
           <span className="bate"> {t('bate_exclamation')}</span>
         </p>
         <button className="order">
-          <a href="#properties">{t('add_properties')}</a>{" "}
+          <a href="#properties">{t('Add Properties')}</a>{" "}
         </button>
         <button className="view">
           <a href="/#product">{t('view_properties')}</a>
