@@ -215,13 +215,6 @@ const Dashboard = () => {
 
   const openEdit = (property: Property) => {
     setSelectedProperty(property);
-        Security: (p.amenities || []).includes("Security"),
-        Gym: (p.amenities || []).includes("Gym"),
-        Pool: (p.amenities || []).includes("Pool"),
-        Garden: (p.amenities || []).includes("Garden"),
-        Balcony: (p.amenities || []).includes("Balcony"),
-      },
-    });
     setEditOpen(true);
   };
 
@@ -709,10 +702,6 @@ const Dashboard = () => {
                 >
                   <Plus className="h-4 w-4" /> 
                   {t("new_listing") || "New Listing"}
-                </Button>
-                <Button variant="outline" className="gap-2 border-2 rounded-xl">
-                  <BarChart3 className="h-4 w-4" />
-                  {t("analytics")}
                 </Button>
               </div>
             </div>
