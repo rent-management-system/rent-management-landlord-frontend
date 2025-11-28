@@ -261,10 +261,12 @@ const Dashboard = () => {
       property.location?.toLowerCase().includes(searchLower);
     
     // Check reserved status if reservedOnly filter is active
-    const matchesReserved = !reservedOnly || (property.reserved === true);
+    const isReserved = property.status === 'RESERVED' || property.reserved === true;
+    const matchesReserved = !reservedOnly || isReserved;
     
     // Check status filter (only if not filtering by reserved)
-    const matchesStatus = statusFilter === "ALL" || property.status === statusFilter;
+    const matchesStatus = statusFilter === "ALL" || 
+                         (reservedOnly ? isReserved : property.status === statusFilter);
     
     return matchesSearch && matchesStatus && matchesReserved;
   });
