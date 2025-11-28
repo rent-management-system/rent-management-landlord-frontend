@@ -268,7 +268,12 @@ const Landlord = () => {
       <Header />
       <main className="flex-1 px-4 md:px-8 lg:px-16">
         <Suspense fallback={<div>Loading...</div>}>
-          <FrontPage />
+          <FrontPage onListPropertyClick={() => {
+            const element = document.getElementById('create-listing');
+            if (element) {
+              (element as HTMLElement).scrollIntoView({ behavior: 'smooth' });
+            }
+          }} />
         </Suspense>
         
         {/* Updated How It Works Section */}
@@ -350,7 +355,29 @@ const Landlord = () => {
         <section id="create-listing" className="py-16 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-gray-900/50 dark:to-gray-800/30">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              {/* Header Section - Removed as requested */}
+              {/* Beautiful Header Section */}
+              <div className="text-center mb-12">
+                <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl mb-4">
+                  List Your Property with Ease
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Reach thousands of potential tenants by listing your property on our platform. Fill in the details below to get started.
+                </p>
+                <div className="mt-6 flex justify-center gap-4">
+                  <a 
+                    href="#create-listing" 
+                    className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    List Your Property
+                  </a>
+                  <a 
+                    href="#contact-us" 
+                    className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    Contact Us
+                  </a>
+                </div>
+              </div>
 
               <Card className="shadow-2xl border-0 bg-background/80 backdrop-blur-sm">
                 <CardHeader className="text-center pb-6">
@@ -632,7 +659,9 @@ const Landlord = () => {
 
         {/* My Properties moved to Dashboard */}
       </main>
-      <Footer />
+      <div id="contact-us">
+        <Footer />
+      </div>
     </div>
   );
 };

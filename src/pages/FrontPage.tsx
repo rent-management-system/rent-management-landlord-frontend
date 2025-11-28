@@ -1,7 +1,11 @@
 import { useLanguage } from "../contexts/LanguageContext";
 import heroimg from "../assets/hero-imag.png";
 
-const FrontPage = () => {
+interface FrontPageProps {
+  onListPropertyClick?: () => void;
+}
+
+const FrontPage: React.FC<FrontPageProps> = ({ onListPropertyClick }) => {
   const { t } = useLanguage();
   
   return (
@@ -10,8 +14,18 @@ const FrontPage = () => {
         <p className="text-lg md:text-xl lg:text-4xl pl-8">
           {t('your_ai_rent_management_system')} <span className="bate">{t('bate_exclamation')}</span>
         </p>
-        <button className="order">
-          <a href="#properties">{t('Add Properties')}</a>
+        <button 
+          className="order"
+          onClick={(e) => {
+            e.preventDefault();
+            if (onListPropertyClick) {
+              onListPropertyClick();
+            } else {
+              window.location.href = "#create-listing";
+            }
+          }}
+        >
+          {t('Add Properties')}
         </button>
         <button className="view">
           <a href="#properties">{t('view_properties')}</a>

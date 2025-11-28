@@ -7,6 +7,7 @@ export const useProperties = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [userProperties, setUserProperties] = useState<Property[]>([]);
   const [metrics, setMetrics] = useState<PropertyStats | null>(null);
+  const [reservedProperties, setReservedProperties] = useState<{total: number, items: Property[]}>({total: 0, items: []});
   
   const { execute, loading, error } = useApi();
 
@@ -122,17 +123,32 @@ export const useProperties = () => {
     });
   }, [execute]);
 
+  // Load reserved properties
+  const loadReservedProperties = useCallback(async () => {
+    return execute(() => propertyService.getReservedProperties(), {
+      onSuccess: (data) => {
+        if (data) setReservedProperties(data);
+      },
+      onError: (error) => {
+        console.warn('Failed to load reserved properties:', error);
+        setReservedProperties({total: 0, items: []});
+      },
+    });
+  }, [execute]);
+
   // Initialize data
   useEffect(() => {
     loadProperties();
     loadUserProperties();
     loadMetrics();
-  }, [loadProperties, loadUserProperties, loadMetrics]);
+    loadReservedProperties();
+  }, [loadProperties, loadUserProperties, loadMetrics, loadReservedProperties]);
 
   return {
     properties,
     userProperties,
     metrics,
+    reservedProperties,
     loading,
     error,
     actions: {

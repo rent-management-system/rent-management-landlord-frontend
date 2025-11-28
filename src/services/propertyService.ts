@@ -24,7 +24,7 @@ export interface Property {
   price: number;
   amenities: string[];
   photos: string[];
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'RESERVED';
   house_type?: string;
   payment_status?: 'PENDING' | 'SUCCESS' | 'FAILED' | string;
   approval_timestamp?: string | null;
@@ -561,6 +561,31 @@ export const propertyService = {
     await apiRequest<unknown>(`/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  // Get reserved properties
+  async getReservedProperties(): Promise<{total: number, items: Property[]}> {
+    const response = await apiRequest<{total: number, items: any[]}>(`/reserved`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Normalize the response to match Property type
+    const normalizedItems = response.items.map(item => ({
+      ...item,
+      price: typeof item.price === 'string' ? parseFloat(item.price) : Number(item.price ?? 0),
+      amenities: Array.isArray(item.amenities) ? item.amenities : [],
+      photos: Array.isArray(item.photos) ? item.photos : [],
+      reserved: true, // Since we're getting reserved properties
+      area: extractArea(item),
+    }));
+
+    return {
+      total: response.total,
+      items: normalizedItems,
+    };
   },
 
   // Toggle reserved flag for a property (owner action)

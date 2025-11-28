@@ -57,7 +57,7 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // Real data via hook
+  // Get the properties from the hook
   const { userProperties, loading, actions, metrics } = useProperties();
 
   // Filters
@@ -97,16 +97,17 @@ const Dashboard = () => {
     const totalProperties = source.length;
     const approvedProperties = source.filter((p: Property) => p.status === 'APPROVED').length;
     const pendingProperties = source.filter((p: Property) => p.status === 'PENDING').length;
+    const reservedProperties = source.filter((p: Property) => p.status === 'RESERVED' || p.reserved).length;
     const totalViews = source.reduce((sum: number, prop: Property) => sum + (prop.views || 0), 0);
     const totalRevenue = source
       .filter((p: Property) => p.status === 'APPROVED')
       .reduce((sum: number, prop: Property) => sum + (prop.price || 0), 0);
-    const reservedProperties = source.filter((p: Property) => p.reserved).length;
+    const reservedPropertiesCount = reservedProperties;
     const reservedViewsTotal = source
-      .filter((p: Property) => p.reserved)
+      .filter((p: Property) => p.status === 'RESERVED' || p.reserved)
       .reduce((sum: number, p: Property) => sum + (p.views || 0), 0);
-    const reservedAverageViews = reservedProperties > 0
-      ? Math.round(reservedViewsTotal / reservedProperties)
+    const reservedAverageViews = reservedPropertiesCount > 0
+      ? Math.round(reservedViewsTotal / reservedPropertiesCount)
       : 0;
 
     return {
@@ -118,6 +119,7 @@ const Dashboard = () => {
       reservedProperties,
       approvalRate: totalProperties > 0 ? Math.round((approvedProperties / totalProperties) * 100) : 0,
       averageViews: totalProperties > 0 ? Math.round(totalViews / totalProperties) : 0,
+      reservedPropertiesCount,
       reservedViewsTotal,
       reservedAverageViews,
     };
@@ -720,24 +722,22 @@ const Dashboard = () => {
                 title={t("pending_listings")}
                 value={metrics?.pending ?? 0}
                 icon={Clock}
-                color="from-amber-500 to-amber-600"
-                trend={0}
-                subtitle={t("pending_label")}
+                color="from-yellow-500 to-yellow-600"
+                trend={4}
               />
               <StatsCard
-                title={t("reserved_views") || "Reserved Views"}
-                value={dashboardMetrics.reservedViewsTotal}
-                icon={Eye}
-                color="from-orange-500 to-orange-600"
+                title={t("reserved_properties") || "Reserved"}
+                value={dashboardMetrics.reservedProperties}
+                icon={CheckCircle2}
+                color="from-purple-500 to-purple-600"
                 trend={0}
                 subtitle={
-                  dashboardMetrics.reservedProperties && dashboardMetrics.reservedProperties > 0
-                    ? `${dashboardMetrics.reservedAverageViews} ${t("avg_reserved") || "avg/reserved"}`
+                  dashboardMetrics.reservedProperties > 0
+                    ? `${dashboardMetrics.reservedAverageViews} ${t("avg_views") || "avg views"}`
                     : '-'
                 }
               />
             </div>
-
 
           </div>
         </section>
