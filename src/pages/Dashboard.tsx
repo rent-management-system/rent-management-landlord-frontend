@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { PropertyDetailsModal } from "@/components/PropertyDetailsModal";
+import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +35,6 @@ import {
   BarChart3,
   Clock,
   ArrowUpRight,
-  Sparkles,
   Search,
   Building2,
   CheckCircle2,
@@ -68,7 +69,8 @@ const Dashboard = () => {
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
   const [editSubmitting, setEditSubmitting] = useState(false);
-  const [editTarget, setEditTarget] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [viewingProperty, setViewingProperty] = useState<Property | null>(null);
   const [editData, setEditData] = useState({
     title: "",
     description: "",
@@ -211,15 +213,8 @@ const Dashboard = () => {
     }
   };
 
-  const openEdit = (p: Property) => {
-    setEditTarget(p);
-    setEditData({
-      title: p.title || "",
-      description: p.description || "",
-      price: (p.price ?? 0).toString(),
-      amenities: {
-        WiFi: (p.amenities || []).includes("WiFi"),
-        Parking: (p.amenities || []).includes("Parking"),
+  const openEdit = (property: Property) => {
+    setSelectedProperty(property);
         Security: (p.amenities || []).includes("Security"),
         Gym: (p.amenities || []).includes("Gym"),
         Pool: (p.amenities || []).includes("Pool"),
@@ -770,12 +765,12 @@ const Dashboard = () => {
           <div className="container mx-auto px-4">
             <div className="mb-12 text-center">
               <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-4">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">{t("property_portfolio")}</span>
+                <Building2 className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">{t("myProperties")}</span>
               </div>
               <h2 className="text-4xl font-bold mb-4">{t("myProperties")}</h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                {t("property_portfolio_subtitle")}
+                {t("myPropertiesDescription")}
               </p>
             </div>
 
@@ -887,7 +882,7 @@ const Dashboard = () => {
                     key={property.id}
                     property={property}
                     onEdit={() => openEdit(property)}
-                    onViewDetails={() => (window.location.href = `/properties/${property.id}`)}
+                    onViewDetails={() => openViewDetails(property)}
                     onApprove={() => openApproveDialog(property)}
                     onDelete={() => actions.deleteProperty(property.id)}
                     onToggleReserve={() => actions.reserveProperty(property.id, !(property.reserved ?? false))}

@@ -307,7 +307,13 @@ const StatsSection = ({ metrics }: { metrics: { total_listings: number; pending:
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 py-12 px-4 md:px-8 lg:px-16">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4">{t('listPropertyTitle')}</h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            {t('listPropertyDescription')}
+          </p>
+        </div>
         <Suspense fallback={<div>Loading...</div>}>
           <FrontPage />
         </Suspense>
