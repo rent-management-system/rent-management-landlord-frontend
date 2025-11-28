@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
-import { Menu, User, X, LogOut, LayoutDashboard } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { User, LogOut, LayoutDashboard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -11,6 +10,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
 
+// Extend the global Window and Document interfaces
+declare global {
+  interface Window {
+    location: {
+      href: string;
+      assign(url: string): void;
+    };
+  }
+  
+  interface Document {
+    body: {
+      style: {
+        overflow: string;
+      };
+    };
+  }
+}
+
 const Header: React.FC = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
@@ -19,7 +36,8 @@ const Header: React.FC = () => {
   const toggleNav = () => setIsNavOpen((s) => !s);
   const closeNav = () => setIsNavOpen(false);
 
-  const changeLanguage = (lang: string) => {
+  const changeLanguage = (e: React.ChangeEvent<HTMLSelectElement> | string) => {
+    const lang = typeof e === 'string' ? e : (e.target as unknown as { value: string }).value;
     i18n.changeLanguage(lang);
   };
 
@@ -36,7 +54,9 @@ const Header: React.FC = () => {
     }
 
     // Redirect to login page
-    window.location.href = "https://rental-user-management-frontend-sigma.vercel.app/";
+    if (typeof window !== 'undefined') {
+      window.location.href = "https://rental-user-management-frontend-sigma.vercel.app/";
+    }
   };
 
   const handleDashboard = () => {
@@ -107,7 +127,10 @@ const Header: React.FC = () => {
         <div className="nav-child3 -mr-4 hidden md:flex items-center space-x-3">
           <select
             className="language-selector-desktop bg-transparent border p-1 rounded"
-            onChange={(e) => changeLanguage(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+              const value = (e.target as unknown as { value: string }).value;
+              changeLanguage(value);
+            }}
             value={i18n.language}
           >
             <option value="" disabled>
@@ -360,27 +383,27 @@ const Header: React.FC = () => {
               style={{ textDecoration: "none", color: "#d8ccccfc", whiteSpace: "normal", overflowWrap: "break-word" }}
             >
               {t('contact')}
-            </Link>
+            </a>
           </li>
           <li className="li">
             <select
               className="sign"
-              onChange={(e) => changeLanguage(e.target.value)}
+              onChange={changeLanguage}
               value={i18n.language}
               style={{
                 display: "flex",
                 padding: "0 2rem",
                 backgroundColor: "transparent",
-                borderRadius: "0.3rem",
-                alignItems: "center",
-                color: "#d8ccccfc",
-                fontSize: "1.3rem",
-                marginTop: "1rem",
-                transition: "all 0.3s",
-                borderRight: "3px solid",
-                borderTop: "1px solid",
-                borderBottom: "3px solid",
-                borderLeft: "1px solid"
+                border: "none",
+                color: "#fff",
+                fontSize: "16px",
+                cursor: "pointer",
+                outline: "none",
+                appearance: "none",
+                backgroundImage: "url(" + "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E" + ")",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right 0.7em top 50%",
+                backgroundSize: "1em auto"
               }}
             >
               <option value="" disabled>

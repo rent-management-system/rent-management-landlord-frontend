@@ -14,6 +14,24 @@ declare global {
   interface Window {
     __WB_MANIFEST: string[];
     skipWaiting(): void;
+    location: {
+      href: string;
+      assign(url: string): void;
+    };
+  }
+
+  interface Document {
+    body: {
+      style: {
+        overflow: string;
+      };
+    };
+  }
+
+  interface HTMLSelectElement {
+    value: string;
+    selectedIndex: number;
+    options: HTMLOptionsCollection;
   }
 
   // Basic type definitions
