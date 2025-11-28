@@ -25,34 +25,20 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from 'sonner';
 import {
-  Bed,
-  Bath,
-  Building,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  Home,
-  Users,
   MapPin,
   Star,
   Eye,
-  ExternalLink,
-  TrendingUp,
-  Edit,
   Trash2,
   Plus,
   BarChart3,
   Clock,
   ArrowUpRight,
-  CreditCard,
-  Crown,
   Sparkles,
   Search,
-  Wifi,
-  Car,
-  Shield,
-  Dumbbell,
-  Trees,
+  Building2,
+  CheckCircle2,
+  Bath,
+  CheckCircle2,
 } from "lucide-react";
 
 const Dashboard = () => {

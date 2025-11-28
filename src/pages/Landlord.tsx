@@ -13,9 +13,8 @@ import { toast } from "sonner";
 import FrontPage from "./FrontPage";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  Building2, Upload, CheckCircle2, Home, MapPin, DollarSign, Bed, Bath, 
-  Square, Wifi, Car, Shield, Dumbbell, Trees, Building, Eye, Star, 
-  Calendar, Filter, Search, Plus, MoreVertical, Edit, Trash2, ExternalLink
+  Upload, CheckCircle2, Home, MapPin, DollarSign, Bed, Bath, 
+  Square, Wifi, Car, Shield, Dumbbell, Trees, Building
 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -32,7 +31,7 @@ import {
 import { useTranslation } from "react-i18next";
 import "@/style.scss";
 import { useProperties } from "@/hooks/useProperties";
-import { Property, PropertySubmission } from "@/services/propertyService";
+import type { PropertySubmission } from "@/services/propertyService";
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: number }) => {
@@ -80,12 +79,7 @@ const Landlord = () => {
   const navigate = useNavigate();
   
   // Use the properties hook for real data
-  const { 
-    userProperties, 
-    metrics, 
-    loading, 
-    actions 
-  } = useProperties();
+  const { actions } = useProperties();
 
   const [formData, setFormData] = useState({
     title: "",
